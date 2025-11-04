@@ -15,7 +15,7 @@ class Password extends FormzInput<String, PasswordValidationError> {
   @override
   PasswordValidationError? validator(String value) {
     if (value.isEmpty) return PasswordValidationError.empty;
-    if (value.length < 8) return PasswordValidationError.tooShort;
+    if (value.length < 4) return PasswordValidationError.tooShort;
     /* if (!value.contains(RegExp(r'[A-Z]')))
       return PasswordValidationError.noUppercase; */
     /* if (!value.contains(RegExp(r'[0-9]')))

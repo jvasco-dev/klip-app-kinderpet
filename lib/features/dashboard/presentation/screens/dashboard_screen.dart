@@ -8,7 +8,10 @@ class DaycareDashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
+      backgroundColor: AppColors.warmBeige,
       drawer: const CommonDrawer(), // Menú lateral
       appBar: AppBar(
         backgroundColor: AppColors.warmBeige,
@@ -27,35 +30,55 @@ class DaycareDashboardScreen extends StatelessWidget {
                 // Navegar a configuración de perfil
               },
               child: const CircleAvatar(
-                // backgroundImage: AssetImage('assets/user_avatar.png'),
+                backgroundColor: AppColors.lightBeigeAccent,
+                radius: 18,
+                child: Icon(Icons.person, color: AppColors.brownText),
               ),
             ),
           ),
         ],
         centerTitle: true,
-        title: Container(
-          padding: const EdgeInsets.only(top: 25, bottom: 10),
-          child: const Text(
-            'Daycare Pets',
-            style: TextStyle(
-              color: AppColors.brownText,
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
-              
-            ),
+        title: const Text(
+          'Daycare Pets',
+          style: TextStyle(
+            color: AppColors.brownText,
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
           ),
         ),
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: 5, // Simulado
-        itemBuilder: (context, index) {
-          return const PetCard(
-            name: 'Luna',
-            checkInTime: '08:30 AM',
-            imagePath: 'assets/pets/luna.png',
-          );
-        },
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Text(
+                'Pets active daycare',
+                style: textTheme.headlineMedium?.copyWith(
+                  color: AppColors.hardText,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Expanded(
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                itemCount: 5, // Simulado
+                separatorBuilder: (_, _)=> const SizedBox(height: 12,),
+                itemBuilder: (context, index) {
+                  // En el futuro aquí vendrán los datos dinámicos del backend
+                  return const PetCard(
+                    name: 'Dobby',
+                    checkInTime: '08:30 AM',
+                    imagePath: 'assets/pets/luna.png',
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
