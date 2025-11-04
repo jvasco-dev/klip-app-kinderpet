@@ -18,19 +18,18 @@ class CommonButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-
     return SizedBox(
       width: double.infinity,
       child: isPrimary
           ? FilledButton(
               onPressed: isLoading ? null : onPressed,
               child: isLoading
-                  ? const SizedBox(
+                  ? SizedBox(
                       height: 20,
                       width: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onPrimary,
                       ),
                     )
                   : Text(label),
