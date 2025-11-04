@@ -1,104 +1,158 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:formz/formz.dart';
 import 'package:kinder_pet/core/config/routes.dart';
-import 'package:kinder_pet/shared/widgets/index.dart';
+import 'package:kinder_pet/features/auth/presentation/pages/auth/signin/bloc/sign_in_bloc.dart';
+import 'package:kinder_pet/features/auth/presentation/pages/auth/signin/bloc/sign_in_event.dart';
+import 'package:kinder_pet/features/auth/presentation/pages/auth/signin/bloc/sign_in_state.dart';
+import 'package:kinder_pet/features/auth/presentation/pages/auth/signin/models/email.dart';
+import 'package:kinder_pet/features/auth/presentation/pages/auth/signin/models/password.dart';
+import 'package:kinder_pet/shared/widgets/common_button.dart';
+import 'package:kinder_pet/shared/widgets/common_text_field.dart';
 
-class SignInScreen extends StatefulWidget {
-  const SignInScreen({super.key});
+class SignInScreen extends StatelessWidget {
+  SignInScreen({super.key});
 
-  @override
-  State<SignInScreen> createState() => _SignInScreenState();
-}
-
-class _SignInScreenState extends State<SignInScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailCtrl = TextEditingController();
-  final _passwordCtrl = TextEditingController();
-  bool _isLoading = false;
-
-  @override
-  void initState() {
-    super.initState();
-    if (kDebugMode) {
-      _emailCtrl.text = 'test@example.com';
-      _passwordCtrl.text = '123456';
-    }
-  }
-
-  void _submit() {
-    if (_formKey.currentState?.validate() ?? false) {
-      setState(() => _isLoading = true);
-
-      // Simula autenticación
-      Future.delayed(const Duration(seconds: 2), () {
-        setState(() => _isLoading = false);
-        Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _emailCtrl.dispose();
-    _passwordCtrl.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Sign In',
-                  style: Theme.of(context).textTheme.headlineLarge,
-                ),
-                const SizedBox(height: 32),
-                CommonTextField(
-                  hintText: 'Email',
-                  controller: _emailCtrl,
-                   icon: Icons.email_outlined,
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Required field';
-                    }
-                    if (!value.contains('@')) return 'Invalid email';
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                CommonTextField(
-                  hintText: 'Password',
-                  controller: _passwordCtrl,
-                  icon: Icons.password_outlined,
-                  obscureText: true,
-                  validator: (value) {
-                    if (value == null || value.length < 6)
-                      return 'Min length 6';
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 32),
-                CommonButton(
-                  label: 'Sign In',
-                  isLoading: _isLoading,
-                  onPressed: _submit,
-                ),
-                const SizedBox(height: 16),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, AppRoutes.signUp);
-                  },
-                  child: const Text("Don't have account? Sign up"),
-                ),
-              ],
+    return BlocListener<SignInBloc, SignInState>(
+      listenWhen: (previous, current) => previous.status != current.status,
+      listener: (context, state) {
+        // if navigation successful, navigate to dashboard
+        if (state.status == FormzSubmissionStatus.success) {
+          Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
+        }
+
+        if (state.status == FormzSubmissionStatus.failure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Error trying to Sign In, try again'),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+        }
+      },
+      child: Scaffold(
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Form(
+              key: _formKey,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Sign In',
+                    style: Theme.of(context).textTheme.headlineLarge,
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  //Email textbox
+                  BlocBuilder<SignInBloc, SignInState>(
+                    buildWhen: (previous, current) =>
+                        previous.email != current.email,
+                    builder: (context, state) {
+                      return CommonTextField(
+                        hintText: 'Email',
+                        icon: Icons.email_outlined,
+                        keyboardType: TextInputType.emailAddress,
+                        onChanged: (value) =>
+                            context.read<SignInBloc>().add(EmailChanged(value)),
+                        validator: (_) {
+                          if (state.email.displayError ==
+                              EmailValidationError.empty) {
+                            return 'Email is required';
+                          } else if (state.email.displayError ==
+                              EmailValidationError.invalid) {
+                            return 'Invalid email format';
+                          } else if (state.email.displayError ==
+                              EmailValidationError.domainNotAllowed) {
+                            return 'Email domain not allowed';
+                          }
+                          return null;
+                        },
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  //Password textbox
+                  BlocBuilder<SignInBloc, SignInState>(
+                    buildWhen: (previous, current) =>
+                        previous.password.value != current.password.value ||
+                        previous.password.displayError !=
+                            current.password.displayError,
+                    builder: (context, state) {
+                      return CommonTextField(
+                        hintText: 'Password',
+                        icon: Icons.password_outlined,
+                        obscureText: true,
+                        onChanged: (value) => context.read<SignInBloc>().add(
+                          PasswordChanged(value),
+                        ),
+                        validator: (_) {
+                          if (state.password.displayError != null) {
+                            switch (state.password.displayError!) {
+                              case PasswordValidationError.empty:
+                                return 'Password cannot be empty';
+                              case PasswordValidationError.tooShort:
+                                return 'Password must be at least 8 characters';
+                              default:
+                                return 'Invalid password';
+                            }
+                          }
+                          return null;
+                        },
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // SignIn Button
+                  BlocBuilder<SignInBloc, SignInState>(
+                    buildWhen: (previous, current) =>
+                        previous.status != current.status,
+                    builder: (context, state) {
+                      return CommonButton(
+                        label: 'Sign In',
+                        onPressed: () {
+                          final bloc = context.read<SignInBloc>();
+                          bloc.add(ValidateForm());
+
+                          Future.delayed(const Duration(milliseconds: 50), () {
+                            final state = bloc.state;
+                            if (state.isValid) {
+                              bloc.add(SignInSubmitted());
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Please fill in all fields correctly',
+                                  ),
+                                  backgroundColor: Colors.redAccent,
+                                ),
+                              );
+                            }
+                          });
+                        },
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  TextButton(
+                    onPressed: () =>
+                        Navigator.pushNamed(context, AppRoutes.signUp),
+                    child: const Text("Don't have an account? Sign up"),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

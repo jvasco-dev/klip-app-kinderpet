@@ -27,7 +27,7 @@ class DaycareDashboardScreen extends StatelessWidget {
                 // Navegar a configuración de perfil
               },
               child: const CircleAvatar(
-                backgroundImage: AssetImage('assets/user_avatar.png'),
+                // backgroundImage: AssetImage('assets/user_avatar.png'),
               ),
             ),
           ),

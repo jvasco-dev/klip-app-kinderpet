@@ -14,7 +14,7 @@ class AppRoutes {
   
 
   static final Map<String, WidgetBuilder> appRoutes = {
-    signIn: (context) => const SignInScreen(),
+    signIn: (context) => SignInScreen(),
     signUp: (context) => const SignUpScreen(),
     userProfile: (context) => const ProfileScreen(),
     dashboard: (context) => const DaycareDashboardScreen()
