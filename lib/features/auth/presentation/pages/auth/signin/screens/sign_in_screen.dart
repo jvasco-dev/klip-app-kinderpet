@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
 import 'package:kinder_pet/core/config/routes.dart';
 import 'package:kinder_pet/core/config/theme.dart';
+import 'package:kinder_pet/features/auth/data/repositories/auth_repository.dart';
 import 'package:kinder_pet/features/auth/data/services/auth_service.dart';
 import 'package:kinder_pet/features/auth/presentation/pages/auth/signin/bloc/sign_in_bloc.dart';
 import 'package:kinder_pet/features/auth/presentation/pages/auth/signin/models/email.dart';
@@ -18,7 +19,9 @@ class SignInScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => SignInBloc(AuthService()),
+      create: (context) => SignInBloc(
+        AuthRepository(AuthService()),
+      ),
       child: BlocListener<SignInBloc, SignInState>(
         listenWhen: (previous, current) => previous.status != current.status,
         listener: (context, state) {

@@ -1,38 +1,37 @@
-import 'package:dio/dio.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class AuthService {
-  final Dio _dio = Dio(
-    BaseOptions(
-      baseUrl: 'http://10.0.2.2:3000/api/v1',
-      connectTimeout: const Duration(seconds: 5),
-      receiveTimeout: const Duration(seconds: 5),
-    ),
-  );
+  final String baseUrl = 'http://10.0.2.2:3000/api/v1'; // Ajusta tu URL real
 
   Future<Map<String, dynamic>> signIn({
     required String email,
     required String password,
   }) async {
-    
-    try {
-      final response = await _dio.post(
-        '/auth/sign-in',
-        data: {'email': email, 'password': password},
-      );
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/sign-in'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email, 'password': password}),
+    );
 
-      if (response.statusCode == 201) {
-        return response.data;
-      } else {
-        throw Exception('Invalid response status: ${response.statusCode}');
-      }
-    } on DioException catch (e) {
-      if (e.response != null) {
-        print('❌ Dio response data: ${e.response?.data}');
-        print('❌ Dio response status: ${e.response?.statusCode}');
-        throw Exception(e.response?.data['message'] ?? 'Invalid credentials');
-      } else {
-        throw Exception('Connection error: ${e.message}');
-      }
+    if (response.statusCode == 201) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Error signing in: ${response.body}');
+    }
+  }
+
+  Future<Map<String, dynamic>> refreshToken(String refreshToken) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/refresh-token'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'refreshToken': refreshToken}),
+    );
+
+    if (response.statusCode == 201) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Error refreshing token: ${response.body}');
     }
   }
 }
