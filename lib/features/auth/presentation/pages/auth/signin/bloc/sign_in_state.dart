@@ -1,7 +1,6 @@
-import 'package:equatable/equatable.dart';
-import 'package:formz/formz.dart';
-import 'package:kinder_pet/features/auth/presentation/pages/auth/signin/models/email.dart';
-import 'package:kinder_pet/features/auth/presentation/pages/auth/signin/models/password.dart';
+
+
+part of 'sign_in_bloc.dart';
 
 class SignInState extends Equatable {
   final Email email;
