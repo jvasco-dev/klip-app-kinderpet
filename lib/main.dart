@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kinder_pet/app.dart';
+import 'package:kinder_pet/features/auth/data/repositories/auth_repository.dart';
 import 'package:kinder_pet/features/auth/data/services/auth_service.dart';
 import 'package:kinder_pet/features/auth/presentation/pages/auth/signin/bloc/sign_in_bloc.dart';
 
 final authService = AuthService();
+final authRepository = AuthRepository(authService);
 
 void main() {
   runApp(
     MultiBlocProvider(
-      providers: [BlocProvider(create: (_) => SignInBloc(authService))],
+      providers: [BlocProvider(create: (_) => SignInBloc(authRepository))],
       child: const MyApp(),
     ),
   );

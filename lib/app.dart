@@ -11,7 +11,7 @@ class KinderPet extends StatelessWidget {
       title: 'KinderPet',
       theme: appTheme,
       debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.signIn,
+      initialRoute: AppRoutes.splash,
       routes: AppRoutes.appRoutes
     );
   }
