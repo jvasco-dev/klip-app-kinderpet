@@ -3,7 +3,7 @@ import 'package:kinder_pet/core/config/theme.dart';
 
 class PetCard extends StatelessWidget {
   final String name;
-  final String checkInTime;
+  final DateTime checkInTime;
   final String imagePath;
 
   const PetCard({
@@ -50,7 +50,7 @@ class PetCard extends StatelessWidget {
                   style: textTheme.titleMedium?.copyWith(
                     color: AppColors.brownText,
                     fontWeight: FontWeight.bold,
-                    fontSize: 18,
+                    // fontSize: 18,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -58,7 +58,7 @@ class PetCard extends StatelessWidget {
                   'Ingreso: $checkInTime',
                   style: textTheme.bodyMedium?.copyWith(
                     color: AppColors.hardText,
-                    fontSize: 14,
+                    // fontSize: 14,
                   ),
                 ),
               ],

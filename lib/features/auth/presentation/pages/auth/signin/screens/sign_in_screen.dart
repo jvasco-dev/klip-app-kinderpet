@@ -5,8 +5,6 @@ import 'package:kinder_pet/core/config/routes.dart';
 import 'package:kinder_pet/core/config/theme.dart';
 import 'package:kinder_pet/features/auth/data/services/auth_service.dart';
 import 'package:kinder_pet/features/auth/presentation/pages/auth/signin/bloc/sign_in_bloc.dart';
-import 'package:kinder_pet/features/auth/presentation/pages/auth/signin/bloc/sign_in_event.dart';
-import 'package:kinder_pet/features/auth/presentation/pages/auth/signin/bloc/sign_in_state.dart';
 import 'package:kinder_pet/features/auth/presentation/pages/auth/signin/models/email.dart';
 import 'package:kinder_pet/features/auth/presentation/pages/auth/signin/models/password.dart';
 import 'package:kinder_pet/shared/widgets/common_button.dart';

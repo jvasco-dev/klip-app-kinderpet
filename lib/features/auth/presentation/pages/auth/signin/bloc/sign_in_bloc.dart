@@ -2,10 +2,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:formz/formz.dart';
 import 'package:kinder_pet/features/auth/data/services/auth_service.dart';
-import 'package:kinder_pet/features/auth/presentation/pages/auth/signin/bloc/sign_in_event.dart';
-import 'package:kinder_pet/features/auth/presentation/pages/auth/signin/bloc/sign_in_state.dart';
 import 'package:kinder_pet/features/auth/presentation/pages/auth/signin/models/email.dart';
 import 'package:kinder_pet/features/auth/presentation/pages/auth/signin/models/password.dart';
+import 'package:equatable/equatable.dart';
+
+part 'sign_in_event.dart';
+part 'sign_in_state.dart';
+
+
 
 class SignInBloc extends Bloc<SignInEvent, SignInState> {
   final AuthService _authService;
