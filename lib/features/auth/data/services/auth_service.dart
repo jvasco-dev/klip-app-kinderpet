@@ -2,7 +2,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AuthService {
-  final String baseUrl = 'http://10.0.2.2:3000/api/v1'; // Ajusta tu URL real
+  // final String baseUrl = 'http://10.0.2.2:3000/api/v1'; // Ajusta tu URL real
+  final String baseUrl = 'http://192.168.20.3:3000/api/v1'; // Ajusta tu URL real
 
   Future<Map<String, dynamic>> signIn({
     required String email,

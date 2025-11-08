@@ -5,7 +5,7 @@ import 'package:kinder_pet/features/dashboard/presentation/bloc/daycare_event_bl
 
 class PetCard extends StatelessWidget {
   final String name;
-  final DateTime checkInTime;
+  final String checkInTime;
   final String imagePath;
   final String eventId;
   final VoidCallback? onFinish;

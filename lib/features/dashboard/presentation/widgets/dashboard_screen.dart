@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kinder_pet/core/config/theme.dart';
+import 'package:kinder_pet/core/utils/date_formatter.dart'; // ✅ Import utilitario de formato de fecha
 import 'package:kinder_pet/features/auth/data/repositories/auth_repository.dart';
 import 'package:kinder_pet/features/auth/data/services/auth_service.dart';
+import 'package:kinder_pet/features/dashboard/data/repository/daycare_event_repository.dart';
+import 'package:kinder_pet/features/dashboard/data/repository/daycare_repository.dart';
 import 'package:kinder_pet/features/dashboard/data/services/daycare_event_service.dart';
+import 'package:kinder_pet/features/dashboard/data/services/daycare_service.dart';
 import 'package:kinder_pet/features/dashboard/presentation/bloc/daycare_event_bloc.dart';
-import 'package:kinder_pet/features/dashboard/presentation/screens/PetCard.dart';
+import 'package:kinder_pet/features/dashboard/presentation/widgets/PetCard_screen.dart';
 import 'package:kinder_pet/shared/widgets/index.dart';
+import 'package:kinder_pet/features/dashboard/presentation/widgets/create_daycare_event_button.dart';
 
 class DaycareDashboardScreen extends StatelessWidget {
   const DaycareDashboardScreen({super.key});
@@ -28,19 +33,23 @@ class DaycareDashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final authService = AuthService();
     final authRepository = AuthRepository(authService);
-    final daycareEventService = DaycareEventService(authRepository);
+    final daycareEventService = DaycareEventService();
+    final daycareEventRepository = DaycareEventRepository(
+      daycareEventService,
+      authRepository,
+    );
+    final daycareService = DaycareService();
+    final daycareRepository = DaycareRepository(daycareService, authRepository);
 
     return FutureBuilder<bool>(
       future: authRepository.hasValidSession(),
       builder: (context, snapshot) {
-        // Muestra loader mientras se valida sesión
         if (!snapshot.hasData) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
         }
 
-        // Si no hay sesión válida, redirige al login
         if (snapshot.data == false) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             Navigator.pushReplacementNamed(context, '/signin');
@@ -48,16 +57,16 @@ class DaycareDashboardScreen extends StatelessWidget {
           return const SizedBox.shrink();
         }
 
-        // ✅ Si hay sesión válida, carga dashboard normalmente
         return MultiRepositoryProvider(
           providers: [
             RepositoryProvider.value(value: authService),
             RepositoryProvider.value(value: authRepository),
             RepositoryProvider.value(value: daycareEventService),
+            RepositoryProvider.value(value: daycareService),
           ],
           child: BlocProvider(
             create: (_) =>
-                DaycareEventBloc(daycareEventService)
+                DaycareEventBloc(daycareEventRepository, daycareRepository)
                   ..add(FetchDaycareEvents()),
             child: Scaffold(
               backgroundColor: AppColors.warmBeige,
@@ -98,17 +107,12 @@ class DaycareDashboardScreen extends StatelessWidget {
                       },
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 16),
-                    child: GestureDetector(
-                      onTap: () {
-                        // TODO: navegar a configuración de perfil
-                      },
-                      child: const CircleAvatar(
-                        backgroundColor: AppColors.lightBeigeAccent,
-                        radius: 18,
-                        child: Icon(Icons.person, color: AppColors.brownText),
-                      ),
+                  const Padding(
+                    padding: EdgeInsets.only(right: 16),
+                    child: CircleAvatar(
+                      backgroundColor: AppColors.lightBeigeAccent,
+                      radius: 18,
+                      child: Icon(Icons.person, color: AppColors.brownText),
                     ),
                   ),
                 ],
@@ -139,7 +143,6 @@ class DaycareDashboardScreen extends StatelessWidget {
                         ),
                       );
                     } else if (state is DaycareEventLoaded) {
-                      // 🌀 Pull-to-refresh
                       return RefreshIndicator(
                         color: AppColors.dogOrange,
                         onRefresh: () => _refreshData(context),
@@ -153,21 +156,26 @@ class DaycareDashboardScreen extends StatelessWidget {
                               const SizedBox(height: 12),
                           itemBuilder: (context, index) {
                             final event = state.events[index];
+
+                            // ✅ Usamos la función utilitaria para formatear
+                            final formattedCheckInTime = formatDateToColombia(
+                              event.startDate,
+                            );
+
                             return PetCard(
                               name: event.pet.name,
-                              checkInTime: event.startDate,
+                              checkInTime: formattedCheckInTime,
                               imagePath: 'assets/pets/luna.png',
                               eventId: event.id,
                               onFinish: () async {
                                 final daycareService = context
                                     .read<DaycareEventBloc>()
-                                    .daycareService;
+                                    .daycareEventRepository;
 
                                 try {
                                   await daycareService.endDaycareEvent(
                                     event.id,
                                   );
-                                  // Refrescar la lista
                                   context.read<DaycareEventBloc>().add(
                                     FetchDaycareEvents(),
                                   );
@@ -206,6 +214,7 @@ class DaycareDashboardScreen extends StatelessWidget {
                   },
                 ),
               ),
+              floatingActionButton: const CreateDaycareEventButton(),
             ),
           ),
         );

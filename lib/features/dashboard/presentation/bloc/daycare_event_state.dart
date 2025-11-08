@@ -9,6 +9,8 @@ class DaycareEventInitial extends DaycareEventState {}
 
 class DaycareEventLoading extends DaycareEventState {}
 
+class DaycareEventSuccess extends DaycareEventState {}
+
 class DaycareEventLoaded extends DaycareEventState {
   final List<DaycareEvent> events;
   DaycareEventLoaded(this.events);
