@@ -1,10 +1,12 @@
+import 'package:kinder_pet/features/dashboard/data/models/daycare_model.dart';
+
 class DaycareEvent {
   final String id;
   final String status;
   final DateTime startDate;
   final Pet pet;
-  final Daycare daycare;
   final Package package;
+  final Daycare daycare;
 
   DaycareEvent({
     required this.id,
@@ -49,26 +51,6 @@ class Pet {
       species: json['species'] ?? '',
       breed: json['breed'] ?? '',
       photo: json['photo'] ?? '',
-    );
-  }
-}
-
-class Daycare {
-  final String id;
-  final double leftHours;
-  final double additionalHours;
-
-  Daycare({
-    required this.id,
-    required this.leftHours,
-    required this.additionalHours,
-  });
-
-  factory Daycare.fromJson(Map<String, dynamic> json) {
-    return Daycare(
-      id: json['_id'] ?? '',
-      leftHours: (json['leftHours'] ?? 0).toDouble(),
-      additionalHours: (json['additionalHours'] ?? 0).toDouble(),
     );
   }
 }

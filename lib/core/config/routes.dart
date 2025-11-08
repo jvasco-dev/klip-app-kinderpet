@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:kinder_pet/features/auth/presentation/pages/auth/signin/screens/sign_in_screen.dart';
 import 'package:kinder_pet/features/auth/presentation/pages/auth/signin/screens/splash_screen.dart';
-import 'package:kinder_pet/features/dashboard/presentation/screens/dashboard_screen.dart';
+import 'package:kinder_pet/features/dashboard/presentation/widgets/dashboard_screen.dart';
 // import 'package:kinder_pet/features/auth/presentation/pages/auth/signup/screens/sign_up_screen.dart';
 import 'package:kinder_pet/features/user/presentation/screens/profile_screen.dart';
 

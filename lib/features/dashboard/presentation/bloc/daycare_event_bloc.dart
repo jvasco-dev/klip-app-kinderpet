@@ -1,18 +1,43 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:kinder_pet/features/dashboard/data/models/daycare_event_model.dart';
-import 'package:kinder_pet/features/dashboard/data/services/daycare_event_service.dart';
+import 'package:kinder_pet/features/dashboard/data/repository/daycare_event_repository.dart';
+import 'package:kinder_pet/features/dashboard/data/repository/daycare_repository.dart';
 
 part 'daycare_event_event.dart';
 part 'daycare_event_state.dart';
 
 class DaycareEventBloc extends Bloc<DaycareEventEvent, DaycareEventState> {
-  final DaycareEventService _daycareEventService;
-  DaycareEventService get daycareService => _daycareEventService;
+  final DaycareEventRepository daycareEventRepository;
+  final DaycareRepository daycareRepository;
 
-  DaycareEventBloc(this._daycareEventService) : super(DaycareEventInitial()) {
+  /* final DaycareEventService _daycareEventService;
+  DaycareEventService get daycareService => _daycareEventService; */
+
+  DaycareEventBloc(this.daycareEventRepository, this.daycareRepository)
+    : super(DaycareEventInitial()) {
     on<FetchDaycareEvents>(_onFetchEvents);
     on<EndDaycareEvent>(_onEndEvent);
+    on<CreateDaycareEvent>(_onCreateEvent);
+  }
+
+  Future<void> _onCreateEvent(
+    CreateDaycareEvent event,
+    Emitter<DaycareEventState> emit,
+  ) async {
+    emit(DaycareEventLoading());
+
+    try {
+      final daycare = await daycareRepository.getActiveDaycareByPetId(
+        event.petId,
+      );
+      await daycareEventRepository.createDaycareEvent(daycare.id);
+
+      emit(DaycareEventSuccess());
+      add(FetchDaycareEvents());
+    } catch (e) {
+      emit(DaycareEventError(e.toString()));
+    }
   }
 
   Future<void> _onFetchEvents(
@@ -21,7 +46,7 @@ class DaycareEventBloc extends Bloc<DaycareEventEvent, DaycareEventState> {
   ) async {
     emit(DaycareEventLoading());
     try {
-      final events = await _daycareEventService.getInProgressEvents();
+      final events = await daycareEventRepository.getInProgressEvents();
       if (events.isEmpty) {
         emit(DaycareEventEmpty());
       } else {
@@ -37,9 +62,9 @@ class DaycareEventBloc extends Bloc<DaycareEventEvent, DaycareEventState> {
     Emitter<DaycareEventState> emit,
   ) async {
     try {
-      await _daycareEventService.endDaycareEvent(event.eventId);
+      await daycareEventRepository.endDaycareEvent(event.eventId);
 
-      final updatedEvents = await _daycareEventService.getInProgressEvents();
+      final updatedEvents = await daycareEventRepository.getInProgressEvents();
       emit(DaycareEventLoaded(updatedEvents));
     } catch (e) {
       emit(DaycareEventError('Failed to end event: $e'));
