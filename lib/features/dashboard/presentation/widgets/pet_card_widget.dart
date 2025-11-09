@@ -3,14 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kinder_pet/core/config/theme.dart';
 import 'package:kinder_pet/features/dashboard/presentation/bloc/daycare_event_bloc.dart';
 
-class PetCard extends StatelessWidget {
+class DaycareEventCard extends StatelessWidget {
   final String name;
   final String checkInTime;
   final String imagePath;
   final String eventId;
   final VoidCallback? onFinish;
 
-  const PetCard({
+  const DaycareEventCard({
     super.key,
     required this.name,
     required this.checkInTime,

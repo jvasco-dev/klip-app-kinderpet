@@ -27,7 +27,7 @@ class SignInScreen extends StatelessWidget {
         listener: (context, state) {
           // if navigation successful, navigate to dashboard
           if (state.status == FormzSubmissionStatus.success) {
-            Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
+            Navigator.pushReplacementNamed(context, AppRoutes.daycareHome);
           }
 
           if (state.status == FormzSubmissionStatus.failure) {

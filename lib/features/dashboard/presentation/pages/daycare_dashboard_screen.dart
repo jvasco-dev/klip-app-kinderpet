@@ -5,13 +5,13 @@ import 'package:kinder_pet/core/utils/date_formatter.dart'; // ✅ Import utilit
 import 'package:kinder_pet/features/auth/data/repositories/auth_repository.dart';
 import 'package:kinder_pet/features/auth/data/services/auth_service.dart';
 import 'package:kinder_pet/features/dashboard/data/repository/daycare_event_repository.dart';
-import 'package:kinder_pet/features/dashboard/data/repository/daycare_repository.dart';
+import 'package:kinder_pet/features/pets_daycare/data/repository/daycare_repository.dart';
 import 'package:kinder_pet/features/dashboard/data/services/daycare_event_service.dart';
-import 'package:kinder_pet/features/dashboard/data/services/daycare_service.dart';
+import 'package:kinder_pet/features/pets_daycare/data/service/daycare_service.dart';
 import 'package:kinder_pet/features/dashboard/presentation/bloc/daycare_event_bloc.dart';
-import 'package:kinder_pet/features/dashboard/presentation/widgets/PetCard_screen.dart';
+import 'package:kinder_pet/features/dashboard/presentation/widgets/pet_card_widget.dart';
 import 'package:kinder_pet/shared/widgets/index.dart';
-import 'package:kinder_pet/features/dashboard/presentation/widgets/create_daycare_event_button.dart';
+import 'package:kinder_pet/features/dashboard/presentation/widgets/create_event_button_widget.dart';
 
 class DaycareDashboardScreen extends StatelessWidget {
   const DaycareDashboardScreen({super.key});
@@ -71,52 +71,6 @@ class DaycareDashboardScreen extends StatelessWidget {
             child: Scaffold(
               backgroundColor: AppColors.warmBeige,
               drawer: const CommonDrawer(),
-              appBar: AppBar(
-                backgroundColor: AppColors.warmBeige,
-                elevation: 0,
-                leading: Builder(
-                  builder: (context) => IconButton(
-                    icon: const Icon(Icons.menu, color: AppColors.brownText),
-                    onPressed: () => Scaffold.of(context).openDrawer(),
-                  ),
-                ),
-                centerTitle: true,
-                title: const Padding(
-                  padding: EdgeInsets.only(top: 20),
-                  child: Text(
-                    'Daycare Pets',
-                    style: TextStyle(
-                      color: AppColors.brownText,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 22,
-                    ),
-                  ),
-                ),
-                actions: [
-                  Builder(
-                    builder: (context) => IconButton(
-                      icon: const Icon(
-                        Icons.refresh,
-                        color: AppColors.brownText,
-                      ),
-                      tooltip: 'Refresh daycare list',
-                      onPressed: () {
-                        context.read<DaycareEventBloc>().add(
-                          FetchDaycareEvents(),
-                        );
-                      },
-                    ),
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.only(right: 16),
-                    child: CircleAvatar(
-                      backgroundColor: AppColors.lightBeigeAccent,
-                      radius: 18,
-                      child: Icon(Icons.person, color: AppColors.brownText),
-                    ),
-                  ),
-                ],
-              ),
 
               // BODY
               body: SafeArea(
@@ -162,7 +116,7 @@ class DaycareDashboardScreen extends StatelessWidget {
                               event.startDate,
                             );
 
-                            return PetCard(
+                            return DaycareEventCard(
                               name: event.pet.name,
                               checkInTime: formattedCheckInTime,
                               imagePath: 'assets/pets/luna.png',

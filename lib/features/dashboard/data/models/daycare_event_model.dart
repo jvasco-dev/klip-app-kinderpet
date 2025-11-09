@@ -1,4 +1,6 @@
-import 'package:kinder_pet/features/dashboard/data/models/daycare_model.dart';
+import 'package:kinder_pet/features/package/data/models/package_model.dart';
+import 'package:kinder_pet/features/pet/data/models/pet_model.dart';
+import 'package:kinder_pet/features/pets_daycare/data/models/daycare_model.dart';
 
 class DaycareEvent {
   final String id;
@@ -13,60 +15,24 @@ class DaycareEvent {
     required this.status,
     required this.startDate,
     required this.pet,
-    required this.daycare,
     required this.package,
+    required this.daycare,
   });
 
   factory DaycareEvent.fromJson(Map<String, dynamic> json) {
+    DateTime parseDate(dynamic value) {
+      if (value == null) return DateTime.now();
+      if (value is String) return DateTime.tryParse(value) ?? DateTime.now();
+      return DateTime.now();
+    }
+
     return DaycareEvent(
       id: json['_id'] ?? '',
       status: json['status'] ?? '',
-      startDate: DateTime.tryParse(json['startDate'] ?? '') ?? DateTime.now(),
-      pet: Pet.fromJson(json['pet'] ?? {}),
-      daycare: Daycare.fromJson(json['daycare'] ?? {}),
-      package: Package.fromJson(json['package'] ?? {}),
-    );
-  }
-}
-
-class Pet {
-  final String id;
-  final String name;
-  final String species;
-  final String breed;
-  final String photo;
-
-  Pet({
-    required this.id,
-    required this.name,
-    required this.species,
-    required this.breed,
-    required this.photo,
-  });
-
-  factory Pet.fromJson(Map<String, dynamic> json) {
-    return Pet(
-      id: json['_id'] ?? '',
-      name: json['name'] ?? '',
-      species: json['species'] ?? '',
-      breed: json['breed'] ?? '',
-      photo: json['photo'] ?? '',
-    );
-  }
-}
-
-class Package {
-  final String id;
-  final String name;
-  final int hours;
-
-  Package({required this.id, required this.name, required this.hours});
-
-  factory Package.fromJson(Map<String, dynamic> json) {
-    return Package(
-      id: json['_id'] ?? '',
-      name: json['name'] ?? '',
-      hours: json['hours'] ?? 0,
+      startDate: parseDate(json['startDate']),
+      pet: Pet.fromJson(json['pet']),
+      package: Package.fromJson(json['package']),
+      daycare: Daycare.fromJson(json['daycare']),
     );
   }
 }

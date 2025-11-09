@@ -2,7 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:kinder_pet/features/dashboard/data/models/daycare_event_model.dart';
 import 'package:kinder_pet/features/dashboard/data/repository/daycare_event_repository.dart';
-import 'package:kinder_pet/features/dashboard/data/repository/daycare_repository.dart';
+import 'package:kinder_pet/features/pets_daycare/data/repository/daycare_repository.dart';
 
 part 'daycare_event_event.dart';
 part 'daycare_event_state.dart';
@@ -56,6 +56,7 @@ class DaycareEventBloc extends Bloc<DaycareEventEvent, DaycareEventState> {
       emit(DaycareEventError(e.toString()));
     }
   }
+
 
   Future<void> _onEndEvent(
     EndDaycareEvent event,

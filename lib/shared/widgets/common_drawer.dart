@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:kinder_pet/core/config/routes.dart';
 import 'package:kinder_pet/core/config/theme.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class CommonDrawer extends StatelessWidget {
-  const CommonDrawer({super.key});
+  /// Callback opcional usado por DaycareHomeScreen para navegación interna
+  final void Function(String page)? onNavigate;
+
+  const CommonDrawer({super.key, this.onNavigate});
 
   Future<String> _getAppVersion() async {
     try {
@@ -12,6 +14,32 @@ class CommonDrawer extends StatelessWidget {
       return '${info.version} (${info.buildNumber})';
     } catch (e) {
       return 'Versión desconocida';
+    }
+  }
+
+  void _navigate(BuildContext context, String page) {
+    if (onNavigate != null) {
+      // navegación controlada por el Home (no cierra la vista principal)
+      onNavigate!(page);
+    } else {
+      // fallback retrocompatible: cierra drawer y hace push por rutas
+      Navigator.pop(context);
+      switch (page) {
+        case 'petsDaycare':
+          Navigator.pushNamed(
+            context,
+            '/pets-daycare',
+          ); // o AppRoutes.petsDaycare si lo importas
+          break;
+        case 'dashboard':
+          Navigator.pushNamed(context, '/dashboard');
+          break;
+        case 'spa':
+          Navigator.pushNamed(context, '/spa');
+          break;
+        default:
+          Navigator.pushNamed(context, '/');
+      }
     }
   }
 
@@ -32,21 +60,24 @@ class CommonDrawer extends StatelessWidget {
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
+
+                  // Ingresar mascota
                   ListTile(
                     leading: const Icon(Icons.pets),
                     title: const Text('Ingresar mascota'),
-                    onTap: () {
-                      // Navegar a ingreso
-                    },
+                    onTap: () => _navigate(context, 'petsDaycare'),
                   ),
+
+                  // Dashboard
                   ListTile(
-                    leading: const Icon(Icons.exit_to_app),
-                    title: const Text('Finalizar daycare'),
-                    onTap: () {
-                      // Navegar a salida
-                    },
+                    leading: const Icon(Icons.dashboard),
+                    title: const Text('Dashboard'),
+                    onTap: () => _navigate(context, 'dashboard'),
                   ),
+
                   const Divider(),
+
+                  // Spa / Calendario
                   ListTile(
                     title: const Text(
                       'Spa',
@@ -56,9 +87,7 @@ class CommonDrawer extends StatelessWidget {
                   ListTile(
                     leading: const Icon(Icons.calendar_today),
                     title: const Text('Calendario'),
-                    onTap: () {
-                      // Navegar a calendario
-                    },
+                    onTap: () => _navigate(context, 'spa'),
                   ),
                 ],
               ),
@@ -79,8 +108,8 @@ class CommonDrawer extends StatelessWidget {
                       style: TextStyle(color: Colors.redAccent),
                     ),
                     onTap: () {
-                      // context.read<AuthBloc>().add(LoggedOut());
-                      Navigator.pushReplacementNamed(context, AppRoutes.signIn);
+                      // Sign out: sigue usando rutas (o lanza evento de auth si lo prefieres)
+                      Navigator.pushReplacementNamed(context, '/sign-in');
                     },
                   ),
                   const SizedBox(height: 8),

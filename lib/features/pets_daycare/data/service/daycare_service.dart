@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:kinder_pet/features/dashboard/data/models/daycare_model.dart';
+import 'package:flutter/foundation.dart';
+import 'package:kinder_pet/features/pets_daycare/data/models/daycare_model.dart';
 
 class DaycareService {
   final Dio _dio = Dio(
@@ -10,6 +11,47 @@ class DaycareService {
       receiveTimeout: const Duration(seconds: 5),
     ),
   );
+
+  Future<List<Daycare>> getAllDaycareInProgress(String token) async {
+    try {
+      final response = await _dio.get(
+        '/daycare',
+        queryParameters: {'status': 'IN_PROGRESS'},
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final dataRaw = response.data;
+
+        // Asegurarnos de que sea una lista
+        final List<dynamic> jsonList = dataRaw is List ? dataRaw : [];
+
+        final List<Daycare> daycares = [];
+        for (var item in jsonList) {
+          try {
+            if (item is Map<String, dynamic>) {
+              daycares.add(Daycare.fromJson(item));
+            } else {
+              debugPrint("⚠️ Skipping invalid item: $item");
+            }
+          } catch (e, stack) {
+            debugPrint("❌ Failed to parse daycare item: $e\n$stack");
+          }
+        }
+        return daycares;
+      } else {
+        return [];
+      }
+    } catch (e) {
+      debugPrint("❌ Error fetching daycares: $e");
+      throw Exception("Error fetching daycares");
+    }
+  }
 
   Future<Daycare> getActiveDaycareByPetId(String petId, String token) async {
     try {

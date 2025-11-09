@@ -29,7 +29,7 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!mounted) return;
 
     if (loggedIn) {
-      Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
+      Navigator.pushReplacementNamed(context, AppRoutes.daycareHome);
     } else {
       Navigator.pushReplacementNamed(context, AppRoutes.signIn);
     }
