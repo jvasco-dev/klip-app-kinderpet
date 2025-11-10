@@ -42,6 +42,7 @@ class _PetsDaycareScreenState extends State<PetsDaycareScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Inicializamos repos y servicios
     final authService = AuthService();
     final authRepository = AuthRepository(authService);
     final daycareService = DaycareService();
@@ -62,134 +63,155 @@ class _PetsDaycareScreenState extends State<PetsDaycareScreen> {
               DaycareEventBloc(daycareEventRepository, daycareRepository),
         ),
       ],
-      child: Scaffold(
-        backgroundColor: AppColors.warmBeige,
-        drawer: const CommonDrawer(),
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                // 🔍 Campo de búsqueda
-                TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: 'Buscar mascota por nombre',
-                    hintStyle: const TextStyle(color: Colors.grey),
-                    filled: true,
-                    fillColor: Colors.white,
-                    prefixIcon: const Icon(
-                      Icons.search,
-                      color: AppColors.brownText,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide.none,
+      // 👇 Escucha los resultados del bloc de eventos
+      child: BlocListener<DaycareEventBloc, DaycareEventState>(
+        listener: (context, state) {
+          if (state is DaycareEventLoading) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Creando evento...'),
+                backgroundColor: Colors.orangeAccent,
+              ),
+            );
+          } else if (state is DaycareEventSuccess) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Evento creado correctamente 🐾'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          } else if (state is DaycareEventError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Error al crear evento: ${state.message}'),
+                backgroundColor: Colors.redAccent,
+              ),
+            );
+          }
+        },
+        child: Scaffold(
+          backgroundColor: AppColors.warmBeige,
+          drawer: const CommonDrawer(),
+          body: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  // 🔍 Campo de búsqueda
+                  TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Buscar mascota por nombre',
+                      hintStyle: const TextStyle(color: Colors.grey),
+                      filled: true,
+                      fillColor: Colors.white,
+                      prefixIcon: const Icon(
+                        Icons.search,
+                        color: AppColors.brownText,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 40),
+                  const SizedBox(height: 40),
 
-                // 📋 Resultados
-                Expanded(
-                  child: BlocBuilder<DaycareBloc, DaycareState>(
-                    builder: (context, state) {
-                      if (state is DaycareLoading) {
-                        return const Center(child: CircularProgressIndicator());
-                      } else if (state is DaycareEmpty) {
-                        return const Center(
-                          child: Text(
-                            'No hay mascotas para mostrar',
-                            style: TextStyle(
-                              color: AppColors.softAlert,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        );
-                      } else if (state is DaycareError) {
-                        return Center(
-                          child: Text(
-                            'Error: ${state.message}',
-                            style: const TextStyle(color: Colors.redAccent),
-                          ),
-                        );
-                      } else if (state is DaycareLoaded) {
-                        final filtered = state.events.where((daycare) {
-                          final petName = (daycare.pet?.name ?? '')
-                              .toLowerCase();
-                          final ownerName =
-                              '${daycare.owner?.firstName ?? ''} ${daycare.owner?.lastName ?? ''}'
-                                  .toLowerCase();
-                          return petName.contains(searchText) ||
-                              ownerName.contains(searchText);
-                        }).toList();
-
-                        if (filtered.isEmpty) {
+                  // 📋 Resultados
+                  Expanded(
+                    child: BlocBuilder<DaycareBloc, DaycareState>(
+                      builder: (context, state) {
+                        if (state is DaycareLoading) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        } else if (state is DaycareEmpty) {
                           return const Center(
                             child: Text(
-                              'No hay resultados para tu búsqueda',
-                              style: TextStyle(color: Colors.grey),
+                              'No hay mascotas para mostrar',
+                              style: TextStyle(
+                                color: AppColors.softAlert,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          );
+                        } else if (state is DaycareError) {
+                          return Center(
+                            child: Text(
+                              'Error: ${state.message}',
+                              style: const TextStyle(color: Colors.redAccent),
+                            ),
+                          );
+                        } else if (state is DaycareLoaded) {
+                          final filtered = state.events.where((daycare) {
+                            final petName = (daycare.pet?.name ?? '')
+                                .toLowerCase();
+                            final ownerName =
+                                '${daycare.owner?.firstName ?? ''} ${daycare.owner?.lastName ?? ''}'
+                                    .toLowerCase();
+                            return petName.contains(searchText) ||
+                                ownerName.contains(searchText);
+                          }).toList();
+
+                          if (filtered.isEmpty) {
+                            return const Center(
+                              child: Text(
+                                'No hay resultados para tu búsqueda',
+                                style: TextStyle(color: Colors.grey),
+                              ),
+                            );
+                          }
+
+                          return RefreshIndicator(
+                            color: AppColors.dogOrange,
+                            onRefresh: () => _refreshData(context),
+                            child: ListView.builder(
+                              itemCount: filtered.length,
+                              itemBuilder: (context, index) {
+                                final daycare = filtered[index];
+                                final pet = daycare.pet;
+                                final owner = daycare.owner;
+                                final package = daycare.package;
+
+                                return CommonDaycareEventCard(
+                                  title:
+                                      '${ReCase(pet?.name ?? '').titleCase} - ${ReCase(owner?.firstName ?? '').titleCase} ${ReCase(owner?.lastName ?? '').titleCase}',
+                                  subtitle:
+                                      'Package ${package?.hours} - AdditionalHours ${daycare.additionalHours} - LeftHours ${daycare.leftHours}',
+                                  imagePath: 'assets/pets/luna.png',
+                                  onTap: () {
+                                    commonShowDialog<DaycareEventBloc>(
+                                      context: context,
+                                      title: 'Create Daycare Event',
+                                      description:
+                                          'Do you want to create the daycare for ${ReCase(pet?.name ?? '').titleCase}?',
+                                      textButtonReject: 'Cancel',
+                                      textButtonAccept: 'Create',
+                                      onConfirm: () {
+                                        context.read<DaycareEventBloc>().add(
+                                          CreateDaycareEvent(pet!.id),
+                                        );
+                                      },
+                                    );
+                                  },
+                                );
+                              },
                             ),
                           );
                         }
 
-                        return RefreshIndicator(
-                          color: AppColors.dogOrange,
-                          onRefresh: () => _refreshData(context),
-                          child: ListView.builder(
-                            itemCount: filtered.length,
-                            itemBuilder: (context, index) {
-                              final daycare = filtered[index];
-                              final pet = daycare.pet;
-                              final owner = daycare.owner;
-                              final package = daycare.package;
-
-                              return CommonDaycareEventCard(
-                                title:
-                                    '${ReCase(pet?.name ?? '').titleCase} - ${ReCase(owner?.firstName ?? '').titleCase} ${ReCase(owner?.lastName ?? '').titleCase}',
-                                subtitle:
-                                    'Package ${package?.hours} - AdditionalHours ${daycare.additionalHours} - LeftHours ${daycare.leftHours}',
-                                imagePath: 'assets/pets/luna.png',
-                                onTap: () {
-                                  commonShowDialog<DaycareEventBloc>(
-                                    context: context,
-                                    title: 'Create Daycare Event',
-                                    description:
-                                        'Do you want to create the daycare for ${ReCase(pet?.name ?? '').titleCase}?',
-                                    textButtonReject: 'Cancel',
-                                    textButtonAccept: 'Create',
-                                    onConfirm: () {
-                                      context.read<DaycareEventBloc>().add(
-                                        CreateDaycareEvent(pet!.id),
-                                      );
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            '${ReCase(pet.name).titleCase} is now in daycare 🐶',
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  );
-                                },
-                              );
-                            },
+                        return const Center(
+                          child: Text(
+                            'Cargando datos...',
+                            style: TextStyle(color: Colors.grey),
                           ),
                         );
-                      }
-                      return const Center(
-                        child: Text(
-                          'Cargando datos...',
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      );
-                    },
+                      },
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

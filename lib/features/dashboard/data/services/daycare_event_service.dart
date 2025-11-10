@@ -26,6 +26,7 @@ class DaycareEventService {
       );
       debugPrint('Evento creado');
     } on DioException catch (e) {
+      debugPrint(e.message);
       throw Exception(_handleDioError(e));
     }
   }
