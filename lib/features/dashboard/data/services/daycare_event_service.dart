@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:kinder_pet/features/dashboard/data/models/daycare_event_model.dart';
 
 class DaycareEventService {
@@ -23,6 +24,7 @@ class DaycareEventService {
           },
         ),
       );
+      debugPrint('Evento creado');
     } on DioException catch (e) {
       throw Exception(_handleDioError(e));
     }

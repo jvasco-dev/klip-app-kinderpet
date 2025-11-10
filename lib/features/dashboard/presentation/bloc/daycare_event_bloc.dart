@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:kinder_pet/features/dashboard/data/models/daycare_event_model.dart';
@@ -31,6 +32,9 @@ class DaycareEventBloc extends Bloc<DaycareEventEvent, DaycareEventState> {
       final daycare = await daycareRepository.getActiveDaycareByPetId(
         event.petId,
       );
+
+    debugPrint(daycare.id);
+
       await daycareEventRepository.createDaycareEvent(daycare.id);
 
       emit(DaycareEventSuccess());
