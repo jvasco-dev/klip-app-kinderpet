@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kinder_pet/core/config/theme.dart';
 import 'package:kinder_pet/features/dashboard/presentation/bloc/daycare_event_bloc.dart';
-import 'package:kinder_pet/features/dashboard/presentation/widgets/qr_scanner_screen.dart';
+import 'package:kinder_pet/features/dashboard/presentation/pages/qr_scanner_screen.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class CreateDaycareEventButton extends StatefulWidget {

@@ -7,8 +7,6 @@ abstract class DaycareEventEvent extends Equatable {
 
 class CreateDaycareEvent extends DaycareEventEvent {
   final String petId;
-
-
   CreateDaycareEvent(this.petId);
 }
 

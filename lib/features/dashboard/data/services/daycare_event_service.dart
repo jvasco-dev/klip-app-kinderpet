@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:kinder_pet/features/dashboard/data/models/daycare_event_model.dart';
 
 class DaycareEventService {
@@ -23,6 +24,7 @@ class DaycareEventService {
           },
         ),
       );
+      debugPrint('Evento creado');
     } on DioException catch (e) {
       throw Exception(_handleDioError(e));
     }
@@ -42,8 +44,12 @@ class DaycareEventService {
         ),
       );
 
-      final List data = response.data;
-      return data.map((item) => DaycareEvent.fromJson(item)).toList();
+      final List<dynamic> jsonList = response.data;
+      final List<DaycareEvent> data = jsonList
+          .map((json) => DaycareEvent.fromJson(json))
+          .toList();
+
+      return data;
     } on DioException catch (e) {
       throw Exception(_handleDioError(e));
     }
