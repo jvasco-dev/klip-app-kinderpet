@@ -1,12 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:kinder_pet/features/dashboard/data/models/daycare_event_model.dart';
 
 class DaycareEventService {
-  final Dio _dio = Dio(
+  Dio get _dio => Dio(
     BaseOptions(
-      // baseUrl: 'http://10.0.2.2:3000/api/v1',
-      baseUrl: 'http://192.168.20.3:3000/api/v1',
+      baseUrl: dotenv.env['API_URL']!,
       connectTimeout: const Duration(seconds: 5),
       receiveTimeout: const Duration(seconds: 5),
     ),

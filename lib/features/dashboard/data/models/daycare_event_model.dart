@@ -1,5 +1,5 @@
 import 'package:kinder_pet/features/package/data/models/package_model.dart';
-import 'package:kinder_pet/features/pet/data/models/pet_model.dart';
+import 'package:kinder_pet/features/pets/data/models/pet_model.dart';
 import 'package:kinder_pet/features/pets_daycare/data/models/daycare_model.dart';
 
 class DaycareEvent {

@@ -1,6 +1,6 @@
 import 'package:kinder_pet/features/owner/data/models/owner_model.dart';
 import 'package:kinder_pet/features/package/data/models/package_model.dart';
-import 'package:kinder_pet/features/pet/data/models/pet_model.dart';
+import 'package:kinder_pet/features/pets/data/models/pet_model.dart';
 
 class Daycare {
   final String id;

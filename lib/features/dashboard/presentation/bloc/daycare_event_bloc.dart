@@ -33,6 +33,10 @@ class DaycareEventBloc extends Bloc<DaycareEventEvent, DaycareEventState> {
         event.petId,
       );
 
+
+    debugPrint('pet');
+    debugPrint(event.petId);
+    debugPrint('daycare');
     debugPrint(daycare.id);
 
       await daycareEventRepository.createDaycareEvent(daycare.id);

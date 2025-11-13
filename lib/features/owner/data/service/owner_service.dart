@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:kinder_pet/features/pets_daycare/data/models/daycare_model.dart';
+import 'package:kinder_pet/features/owner/data/models/owner_model.dart';
 
-class DaycareService {
+class OwnerService {
   Dio get _dio => Dio(
     BaseOptions(
       baseUrl: dotenv.env['API_URL']!,
@@ -12,11 +12,11 @@ class DaycareService {
     ),
   );
 
-  Future<List<Daycare>> getAllDaycareInProgress(String token) async {
+  Future<List<Owner>> getOwnersByLastName(String lastName, String token) async {
     try {
       final response = await _dio.get(
-        '/daycare',
-        queryParameters: {'status': 'IN_PROGRESS'},
+        '/owners',
+        queryParameters: {'lastName': lastName},
         options: Options(
           headers: {
             'Authorization': 'Bearer $token',
@@ -27,54 +27,28 @@ class DaycareService {
 
       if (response.statusCode == 200 && response.data != null) {
         final dataRaw = response.data;
-
-        // Asegurarnos de que sea una lista
         final List<dynamic> jsonList = dataRaw is List ? dataRaw : [];
 
-        final List<Daycare> daycares = [];
+        final List<Owner> owners = [];
         for (var item in jsonList) {
           try {
             if (item is Map<String, dynamic>) {
-              daycares.add(Daycare.fromJson(item));
+              owners.add(Owner.fromJson(item));
             } else {
-              debugPrint("⚠️ Skipping invalid item: $item");
+              debugPrint("⚠️ Skipping invalid owner item: $item");
             }
           } catch (e, stack) {
-            debugPrint("❌ Failed to parse daycare item: $e\n$stack");
+            debugPrint("❌ Failed to parse owner item: $e\n$stack");
           }
         }
-        return daycares;
+        return owners;
       } else {
         return [];
       }
-    } catch (e) {
-      debugPrint("❌ Error fetching daycares: $e");
-      throw Exception("Error fetching daycares");
-    }
-  }
-
-  Future<Daycare> getActiveDaycareByPetId(String petId, String token) async {
-    try {
-      final response = await _dio.get(
-        '/daycare',
-        queryParameters: {'pet': petId, 'status': 'IN_PROGRESS'},
-        options: Options(
-          headers: {
-            'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json',
-          },
-        ),
-      );
-
-      if (response.statusCode == 200 &&
-          response.data != null &&
-          response.data is List) {
-        return Daycare.fromJson(response.data.first);
-      } else {
-        throw Exception('Error trying to get daycare from Pet');
-      }
     } on DioException catch (e) {
       throw Exception(_handleDioError(e));
+    } catch (e) {
+      throw Exception("Unexpected error: $e");
     }
   }
 

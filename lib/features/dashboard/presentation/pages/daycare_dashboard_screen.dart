@@ -6,7 +6,7 @@ import 'package:kinder_pet/features/auth/data/repositories/auth_repository.dart'
 import 'package:kinder_pet/features/auth/data/services/auth_service.dart';
 import 'package:kinder_pet/features/dashboard/data/repository/daycare_event_repository.dart';
 import 'package:kinder_pet/features/pets_daycare/data/repository/daycare_repository.dart';
-import 'package:kinder_pet/features/dashboard/data/services/daycare_event_service.dart';
+import 'package:kinder_pet/features/dashboard/data/service/daycare_event_service.dart';
 import 'package:kinder_pet/features/pets_daycare/data/service/daycare_service.dart';
 import 'package:kinder_pet/features/dashboard/presentation/bloc/daycare_event_bloc.dart';
 import 'package:kinder_pet/shared/functions/common_show_dialog.dart';

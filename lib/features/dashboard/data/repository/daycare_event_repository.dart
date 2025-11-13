@@ -1,6 +1,6 @@
 import 'package:kinder_pet/features/auth/data/repositories/auth_repository.dart';
 import 'package:kinder_pet/features/dashboard/data/models/daycare_event_model.dart';
-import 'package:kinder_pet/features/dashboard/data/services/daycare_event_service.dart';
+import 'package:kinder_pet/features/dashboard/data/service/daycare_event_service.dart';
 
 class DaycareEventRepository {
   final DaycareEventService _daycareEventService;
