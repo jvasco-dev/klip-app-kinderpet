@@ -57,8 +57,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   controller: _nameCtrl,
                   icon: Icons.password_outlined,
                   validator: (value) {
-                    if (value == null || value.isEmpty)
+                    if (value == null || value.isEmpty) {
                       return 'Required field';
+                    }
                     return null;
                   },
                 ),
@@ -69,8 +70,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   icon: Icons.password_outlined,
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
-                    if (value == null || value.isEmpty)
+                    if (value == null || value.isEmpty) {
                       return 'Required field';
+                    }
                     if (!value.contains('@')) return 'Correo inválido';
                     return null;
                   },
@@ -82,8 +84,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   obscureText: true,
                   icon: Icons.password_outlined,
                   validator: (value) {
-                    if (value == null || value.length < 6)
+                    if (value == null || value.length < 6) {
                       return 'Min length 6';
+                    }
                     return null;
                   },
                 ),
