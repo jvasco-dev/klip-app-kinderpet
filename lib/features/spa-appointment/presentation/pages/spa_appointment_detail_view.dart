@@ -18,11 +18,10 @@ class SpaAppointmentDetailView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(appointment.serviceName, style: theme.textTheme.headlineSmall),
+            Text(appointment.service, style: theme.textTheme.headlineSmall),
             const SizedBox(height: 8),
             Text("Mascota: ${appointment.pet?.name ?? 'N/A'}"),
-            Text("Dueño: ${appointment.owner?.firstName ?? 'N/A'}"),
-            Text("Precio: \$${appointment.price.toStringAsFixed(2)}"),
+            Text("Precio: \$${appointment.amount.toStringAsFixed(2)}"),
             Text("Fecha: ${appointment.date.toLocal()}"),
             Text("Estado: ${appointment.status}"),
             const Spacer(),

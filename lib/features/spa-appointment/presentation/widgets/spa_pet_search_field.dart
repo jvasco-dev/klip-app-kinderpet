@@ -65,7 +65,7 @@ class _SpaPetSearchFieldState extends State<SpaPetSearchField> {
             child: Text(_error!, style: const TextStyle(color: Colors.red)),
           ),
         if (_results.isNotEmpty)
-          Container(
+          SizedBox(
             height: 160,
             child: ListView.builder(
               itemCount: _results.length,

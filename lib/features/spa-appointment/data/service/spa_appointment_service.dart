@@ -1,6 +1,4 @@
-// lib/features/spa_appointment/data/service/spa_appointment_service.dart
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/spa_appointment_model.dart';
 
@@ -15,9 +13,8 @@ class SpaAppointmentService {
 
   final String _baseUrl = '/spa-appointments';
 
-  SpaAppointmentService(Dio dio);
+  SpaAppointmentService();
 
-  /// Obtener todas las citas (opcionalmente filtradas por fecha)
   Future<List<SpaAppointment>> getAllAppointments({
     String? date,
     required String token,
@@ -36,28 +33,26 @@ class SpaAppointmentService {
 
       if (response.statusCode == 200 && response.data != null) {
         final raw = response.data;
+        // ✅ CORRECCIÓN CLAVE: Aseguramos que 'raw' es una lista de dynamic
         final List<dynamic> jsonList = raw is List ? raw : [];
-        final List<SpaAppointment> appointments = [];
 
-        for (var item in jsonList) {
-          try {
-            if (item is Map<String, dynamic>) {
-              appointments.add(SpaAppointment.fromJson(item));
-            } else {
-              debugPrint("⚠️ Skipping invalid item: $item");
-            }
-          } catch (e, stack) {
-            debugPrint("❌ Failed to parse appointment item: $e\n$stack");
-          }
-        }
+        final List<SpaAppointment> appointments = jsonList
+            .map(
+              (json) => SpaAppointment.fromJson(json as Map<String, dynamic>),
+            )
+            .toList();
 
         return appointments;
       } else {
-        return [];
+        throw Exception(
+          'Error fetching appointments: Received unexpected status code ${response.statusCode}',
+        );
       }
+    } on DioException catch (e) {
+      throw Exception(_handleDioError(e));
     } catch (e) {
-      debugPrint("❌ Error fetching appointments: $e");
-      throw Exception("Error fetching appointments");
+      // Manejo de errores de serialización o de tipo que puede ser la causa original
+      throw Exception('Deserialization error: $e');
     }
   }
 
@@ -78,34 +73,13 @@ class SpaAppointmentService {
         ),
       );
 
-      if (response.statusCode == 201 || response.statusCode == 200) {
+      if (response.statusCode == 201 && response.data != null) {
         return SpaAppointment.fromJson(response.data);
       } else {
-        throw Exception('Failed to create appointment');
+        throw Exception(
+          'Error creating appointment: Received status code ${response.statusCode}',
+        );
       }
-    } on DioException catch (e) {
-      throw Exception(_handleDioError(e));
-    }
-  }
-
-  /// Actualizar estado de una cita (por ejemplo: COMPLETED o CANCELLED)
-  Future<void> updateAppointmentStatus({
-    required String id,
-    required String status,
-    bool? paid,
-    required String token,
-  }) async {
-    try {
-      await _dio.patch(
-        '$_baseUrl/$id',
-        data: {'status': status, if (paid != null) 'paid': paid},
-        options: Options(
-          headers: {
-            'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json',
-          },
-        ),
-      );
     } on DioException catch (e) {
       throw Exception(_handleDioError(e));
     }
@@ -139,6 +113,28 @@ class SpaAppointmentService {
     }
   }
 
+  /// Actualizar el estado de una cita (CANCELLED o COMPLETED)
+  Future<void> updateAppointmentStatus({
+    required String id,
+    required String status,
+    required String token,
+  }) async {
+    try {
+      await _dio.patch(
+        '$_baseUrl/$id/status',
+        data: {'status': status},
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+    } on DioException catch (e) {
+      throw Exception(_handleDioError(e));
+    }
+  }
+
   /// Manejo centralizado de errores Dio
   String _handleDioError(DioException e) {
     if (e.type == DioExceptionType.connectionTimeout ||
@@ -146,10 +142,15 @@ class SpaAppointmentService {
       return 'Connection timeout. Please check your internet connection.';
     } else if (e.response != null) {
       final status = e.response?.statusCode ?? 0;
-      final data = e.response?.data ?? {};
-      return data['message'] ?? 'Request failed with status code $status.';
+      final data = e.response?.data;
+      if (data is Map && data.containsKey('message')) {
+        return '$status: ${data['message']}';
+      } else if (data is String && data.isNotEmpty) {
+        return '$status: $data';
+      }
+      return 'Server error $status: ${e.message}';
     } else {
-      return 'Unexpected error: ${e.message}';
+      return 'Network error: ${e.message}';
     }
   }
 }

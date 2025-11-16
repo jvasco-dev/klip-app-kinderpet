@@ -37,6 +37,17 @@ class Pet {
       return Pet(id: json, name: '');
     }
 
+    Owner? parsedOwner;
+    try {
+      if (json['owner'] is Map<String, dynamic>) {
+        parsedOwner = Owner.fromJson(json['owner']);
+      } else {
+        parsedOwner = null; // si llega [], '', null → se ignora
+      }
+    } catch (_) {
+      parsedOwner = null;
+    }
+
     // ✅ Si el backend envía el objeto completo
     return Pet(
       id: json['_id'] ?? '',
@@ -51,7 +62,7 @@ class Pet {
           : null,
       microchip: json['microchip'],
       photo: json['photo'],
-      owner: json['owner'] != null ? Owner.fromJson(json['owner']) : null,
+      owner: parsedOwner,
     );
   }
 

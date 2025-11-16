@@ -16,7 +16,7 @@ class CreateDaycareEventButton extends StatefulWidget {
 }
 
 class _CreateDaycareEventButtonState extends State<CreateDaycareEventButton> {
-  bool _isPressed = false;
+  // bool _isPressed = false;
   bool _isCreatingEvent = false;
 
   Future<void> _startQRScanner(BuildContext context) async {

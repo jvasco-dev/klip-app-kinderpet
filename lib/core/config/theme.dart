@@ -6,6 +6,9 @@ class AppColors {
   static const Color dogOrange = Color(
     0xFFF4A261,
   ); // Principal: botones y acentos
+  static const Color lightDogOrange = Color(
+    0xFFFFD1A8,
+  ); // Nuevo: Tono claro de naranja
   static const Color darkOrangeHover = Color(0xFFE76F51); // Hover o error suave
   static const Color warmBeige = Color(0xFFFAF3E0); // Fondo general
   static const Color lightBeigeAccent = Color(
@@ -23,6 +26,12 @@ class AppColors {
     0xFFB8B8B8,
   ); // Placeholder, texto apagado
   static const Color hardText = Color(0xFF555353); // Texto fuerte o encabezados
+  static const Color lightGray = Color(
+    0xFFE0E0E0,
+  ); // Nuevo: Gris claro para fondos o bordes
+  static const Color darkGray = Color(
+    0xFF616161,
+  ); // Nuevo: Gris oscuro para texto o iconos
 
   // Feedback (estados)
   static const Color softAlert = Color(0xFFFF5252); // Error

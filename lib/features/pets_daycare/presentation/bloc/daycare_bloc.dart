@@ -20,7 +20,7 @@ class DaycareBloc extends Bloc<DaycareEvent, DaycareState> {
     emit(DaycareLoading());
 
     try {
-      final events = await this.daycareRepository.getAllDaycareInProgress();
+      final events = await daycareRepository.getAllDaycareInProgress();
 
       if (events.isEmpty) {
         emit(DaycareEmpty());

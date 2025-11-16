@@ -1,70 +1,79 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'package:kinder_pet/features/pets/data/models/pet_model.dart';
 import 'package:kinder_pet/features/pets/data/repository/pet_repository.dart';
-import 'package:kinder_pet/features/spa-appointment/cubit/spa_appointment_cubit.dart';
-import 'package:kinder_pet/features/spa-appointment/data/models/spa_appointment_model.dart';
-import 'package:kinder_pet/features/spa-appointment/presentation/widgets/spa_appointment_form.dart';
-import 'package:kinder_pet/core/config/theme.dart';
 
-class SpaAppointmentAddView extends StatefulWidget {
-  final DateTime date; // <-- Agregamos este campo requerido
+class SpaPetSearchField extends StatefulWidget {
+  final PetRepository petRepository;
+  final ValueChanged<Pet> onPetSelected;
 
-  const SpaAppointmentAddView({Key? key, required this.date}) : super(key: key);
+  const SpaPetSearchField({
+    super.key,
+    required this.petRepository,
+    required this.onPetSelected,
+  });
 
   @override
-  State<SpaAppointmentAddView> createState() => _SpaAppointmentAddViewState();
+  State<SpaPetSearchField> createState() => _SpaPetSearchFieldState();
 }
 
-class _SpaAppointmentAddViewState extends State<SpaAppointmentAddView> {
+class _SpaPetSearchFieldState extends State<SpaPetSearchField> {
+  final TextEditingController _controller = TextEditingController();
+  List<Pet> results = [];
+  bool loading = false;
+
+  Future<void> _search(String query) async {
+    if (query.isEmpty) return;
+
+    setState(() => loading = true);
+
+    try {
+      final pets = await widget.petRepository.searchPets(query);
+      setState(() => results = pets);
+    } catch (e) {
+      results = [];
+    }
+
+    setState(() => loading = false);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.warmBeige,
-        title: const Text(
-          'Nueva cita Spa',
-          style: TextStyle(color: AppColors.brownText),
+    return Column(
+      children: [
+        TextField(
+          controller: _controller,
+          onChanged: _search,
+          decoration: const InputDecoration(
+            labelText: "Buscar mascota",
+            prefixIcon: Icon(Icons.search),
+          ),
         ),
-        iconTheme: const IconThemeData(color: AppColors.brownText),
-      ),
-      backgroundColor: AppColors.warmBeige,
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: BlocConsumer<SpaAppointmentCubit, SpaAppointmentState>(
-          listener: (context, state) {
-            if (state is SpaAppointmentSuccess) {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text(state.message)));
-              Navigator.pop(context);
-            } else if (state is SpaAppointmentError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: Colors.redAccent,
-                ),
-              );
-            }
-          },
-          builder: (context, state) {
-            if (state is SpaAppointmentLoading) {
-              return const Center(child: CircularProgressIndicator());
-            }
 
-            return SpaAppointmentForm(
-              // Pasamos la fecha inicial al formulario
-              initialDate: widget.date,
-              petRepository: context.read<PetRepository>(),
-              onSubmit: (SpaAppointment appointment) {
-                final newAppointment = appointment.copyWith(date: widget.date);
-                context.read<SpaAppointmentCubit>().createAppointment(
-                  newAppointment,
+        const SizedBox(height: 10),
+
+        if (loading) const CircularProgressIndicator(),
+
+        if (!loading && results.isNotEmpty)
+          Container(
+            constraints: const BoxConstraints(maxHeight: 200),
+            child: ListView.builder(
+              itemCount: results.length,
+              itemBuilder: (_, i) {
+                final pet = results[i];
+                return ListTile(
+                  title: Text(pet.name),
+                  subtitle: Text(pet.breed ?? ''),
+                  onTap: () {
+                    widget.onPetSelected(pet);
+                    _controller.text = pet.name;
+                    setState(() => results.clear());
+                  },
                 );
               },
-            );
-          },
-        ),
-      ),
+            ),
+          ),
+      ],
     );
   }
 }

@@ -37,6 +37,31 @@ class PetService {
     }
   }
 
+  Future<List<Pet>> searchPets(String query, String token) async {
+    try {
+      final resp = await _dio.get(
+        '/pets',
+        queryParameters: {'name': query},
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+      final dataRaw = resp.data;
+      final list = dataRaw is List ? dataRaw : (dataRaw['data'] ?? []);
+      final List<Pet> pets = [];
+      for (var item in list) {
+        try {
+          pets.add(Pet.fromJson(Map<String, dynamic>.from(item)));
+        } catch (e, st) {
+          debugPrint('pet parse skip $e\n$st');
+        }
+      }
+      return pets;
+    } on DioException catch (e) {
+      throw Exception(_handleDioError(e));
+    } catch (e) {
+      throw Exception('Unexpected error: $e');
+    }
+  }
+
   String _handleDioError(DioException e) {
     if (e.type == DioExceptionType.connectionTimeout ||
         e.type == DioExceptionType.receiveTimeout) {

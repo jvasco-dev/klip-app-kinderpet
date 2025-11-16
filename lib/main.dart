@@ -9,6 +9,9 @@ import 'package:kinder_pet/features/auth/presentation/pages/auth/signin/bloc/sig
 import 'package:kinder_pet/features/pets/data/repository/pet_repository.dart';
 import 'package:kinder_pet/features/pets/data/service/pet_service.dart';
 import 'package:kinder_pet/features/pets/logic/pet_search_cubit.dart';
+import 'package:kinder_pet/features/spa-appointment/cubit/spa_appointment_cubit.dart';
+import 'package:kinder_pet/features/spa-appointment/data/repository/spa_appointment_repository.dart';
+import 'package:kinder_pet/features/spa-appointment/data/service/spa_appointment_service.dart';
 
 final authService = AuthService();
 final authRepository = AuthRepository(authService);
@@ -16,6 +19,7 @@ final authRepository = AuthRepository(authService);
 Future<void> main() async {
   await dotenv.load(fileName: ".env");
   await initializeDateFormatting('es_CO', null);
+
   runApp(
     MultiBlocProvider(
       providers: [
@@ -24,18 +28,14 @@ Future<void> main() async {
               PetSearchCubit(PetRepository(PetService(), authRepository)),
         ),
         BlocProvider(create: (_) => SignInBloc(authRepository)),
+        BlocProvider(
+          create: (_) => SpaAppointmentCubit(
+            SpaAppointmentRepository(SpaAppointmentService(), authRepository),
+          ),
+        ),
       ],
-      child: const MyApp(),
+      child: const KinderPet(),
     ),
   );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return KinderPet();
-  }
-}

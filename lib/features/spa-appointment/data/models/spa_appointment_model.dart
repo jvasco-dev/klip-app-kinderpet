@@ -1,26 +1,21 @@
-import 'package:kinder_pet/features/owner/data/models/owner_model.dart';
 import 'package:kinder_pet/features/pets/data/models/pet_model.dart';
 
 class SpaAppointment {
   final String id;
   final Pet? pet;
-  final Owner? owner;
-  final String serviceName;
-  final String? description;
-  final double price;
+  final String service;
+  final String? notes;
+  final double amount;
   final DateTime date;
-  final bool paid;
   final String status;
 
   SpaAppointment({
     required this.id,
     this.pet,
-    this.owner,
-    required this.serviceName,
-    this.description,
-    required this.price,
+    required this.service,
+    this.notes,
+    required this.amount,
     required this.date,
-    this.paid = false,
     required this.status,
   });
 
@@ -28,12 +23,10 @@ class SpaAppointment {
     return SpaAppointment(
       id: json['_id'] ?? '',
       pet: json['pet'] != null ? Pet.fromJson(json['pet']) : null,
-      owner: json['owner'] != null ? Owner.fromJson(json['owner']) : null,
-      serviceName: json['serviceName'] ?? 'Baño',
-      description: json['description'],
-      price: (json['price'] is num) ? (json['price'] as num).toDouble() : 0.0,
+      service: json['service'] ?? 'Baño',
+      notes: json['notes']?.toString(),
+      amount: (json['amount'] is num) ? (json['amount'] as num).toDouble() : 0.0,
       date: DateTime.tryParse(json['date'] ?? '') ?? DateTime.now(),
-      paid: json['paid'] ?? false,
       status: json['status'] ?? 'SCHEDULED',
     );
   }
@@ -42,12 +35,10 @@ class SpaAppointment {
     return {
       '_id': id,
       'pet': pet?.toJson(),
-      'owner': owner?.toJson(),
-      'serviceName': serviceName,
-      'description': description,
-      'price': price,
+      'service': service,
+      "notes": notes,
+      'amount': amount,
       'date': date.toIso8601String(),
-      'paid': paid,
       'status': status,
     };
   }
@@ -56,10 +47,9 @@ class SpaAppointment {
   SpaAppointment copyWith({
     String? id,
     Pet? pet,
-    Owner? owner,
-    String? serviceName,
-    String? description,
-    double? price,
+    String? service,
+    String? notes,
+    double? amount,
     DateTime? date,
     bool? paid,
     String? status,
@@ -67,12 +57,10 @@ class SpaAppointment {
     return SpaAppointment(
       id: id ?? this.id,
       pet: pet ?? this.pet,
-      owner: owner ?? this.owner,
-      serviceName: serviceName ?? this.serviceName,
-      description: description ?? this.description,
-      price: price ?? this.price,
+      service: service ?? this.service,
+      notes: notes ?? this.notes,
+      amount: amount ?? this.amount,
       date: date ?? this.date,
-      paid: paid ?? this.paid,
       status: status ?? this.status,
     );
   }

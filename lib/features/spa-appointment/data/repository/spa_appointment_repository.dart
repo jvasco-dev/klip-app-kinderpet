@@ -47,18 +47,18 @@ class SpaAppointmentRepository {
     }
   }
 
-  Future<void> updateAppointmentStatus(
+  // MODIFICACIÓN CRUCIAL AQUÍ: Ahora devuelve SpaAppointment
+  Future<SpaAppointment> updateAppointmentStatus(
     String id,
-    String status, {
-    bool? paid,
-  }) async {
+    String status,
+  ) async {
     final token = await _authRepository.getAccessToken();
     if (token == null) throw Exception('No authentication token found');
 
-    await _service.updateAppointmentStatus(
+    // Usamos el servicio de actualización con solo el campo de estado
+    return await _service.updateAppointment(
       id: id,
-      status: status,
-      paid: paid,
+      data: {'status': status},
       token: token,
     );
   }

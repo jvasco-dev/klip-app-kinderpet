@@ -1,4 +1,3 @@
-import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kinder_pet/features/spa-appointment/data/models/spa_appointment_model.dart';
 import 'package:kinder_pet/features/spa-appointment/data/repository/spa_appointment_repository.dart';
@@ -10,86 +9,183 @@ class SpaAppointmentCubit extends Cubit<SpaAppointmentState> {
 
   SpaAppointmentCubit(this._repository) : super(SpaAppointmentInitial());
 
-  /// Carga todas las citas (opcionalmente por fecha en formato ISO yyyy-MM-dd)
+  // -------------------------------------------------------------
+  //  Selección de fecha desde el calendario
+  // -------------------------------------------------------------
+
+  Future<void> selectDate(DateTime date) async {
+    emit(
+      SpaAppointmentLoading(
+        selectedDate: date,
+        appointments: state.appointments, appointmentsByDay: {},
+      ),
+    );
+
+    await loadAppointments(date: date.toIso8601String().split('T').first);
+  }
+
+  // -------------------------------------------------------------
+  //  Carga inicial del día actual (usado en initState del calendario)
+  // -------------------------------------------------------------
+
+  Future<void> loadCurrentSelectedDayAppointments() async {
+    final dateStr = state.selectedDate.toIso8601String().split('T').first;
+    await loadAppointments(date: dateStr);
+  }
+
+  // -------------------------------------------------------------
+  //  Cargar citas desde el backend (solo por fecha)
+  // -------------------------------------------------------------
+
   Future<void> loadAppointments({String? date}) async {
-    emit(SpaAppointmentLoading());
+    emit(
+      SpaAppointmentLoading(
+        selectedDate: state.selectedDate,
+        appointments: state.appointments, appointmentsByDay: {},
+      ),
+    );
+
     try {
-      final appointments = await _repository.getAllAppointments(date: date);
-      emit(SpaAppointmentLoaded(appointments));
+      final list = await _repository.getAllAppointments(date: date);
+
+      emit(
+        SpaAppointmentLoaded(
+          selectedDate: state.selectedDate,
+          appointments: list,
+        ),
+      );
     } catch (e) {
-      emit(SpaAppointmentError('Failed to load appointments: $e'));
+      emit(
+        SpaAppointmentError(
+          'Failed to load appointments: ${e.toString()}',
+          selectedDate: state.selectedDate,
+          appointments: state.appointments, appointmentsByDay: {},
+        ),
+      );
     }
   }
 
-  Future<void> updateAppointment(SpaAppointment appointment) async {
-    emit(SpaAppointmentLoading());
+  // -------------------------------------------------------------
+  //  Actualizar cita
+  // -------------------------------------------------------------
+
+  Future<void> updateAppointment(SpaAppointment updatedAppointment) async {
+    emit(
+      SpaAppointmentLoading(
+        selectedDate: state.selectedDate,
+        appointments: state.appointments, appointmentsByDay: {},
+      ),
+    );
+
     try {
-      // Construye el payload que tu API espera. Ejemplo:
-      final data = {
-        if (appointment.serviceName.isNotEmpty)
-          'serviceName': appointment.serviceName,
-        if (appointment.description != null)
-          'description': appointment.description,
-        'price': appointment.price,
-        'date': appointment.date.toIso8601String(),
-        'paid': appointment.paid,
-        'status': appointment.status,
-        if (appointment.pet != null) 'pet': appointment.pet!.id,
-        if (appointment.owner != null) 'owner': appointment.owner!.id,
-      };
+      final data = updatedAppointment.toJson();
 
-      final updated = await _repository.updateAppointment(appointment.id, data);
+      final updated = await _repository.updateAppointment(
+        updatedAppointment.id,
+        data,
+      );
 
-      emit(SpaAppointmentSuccess('Appointment updated successfully'));
-      // refrescar lista para la fecha afectada
+      emit(
+        SpaAppointmentSuccess(
+          'Appointment updated successfully',
+          selectedDate: state.selectedDate,
+          appointments: state.appointments, appointmentsByDay: {},
+        ),
+      );
+
       await loadAppointments(
         date: updated.date.toIso8601String().split('T').first,
       );
     } catch (e) {
-      emit(SpaAppointmentError('Failed to update appointment: $e'));
+      emit(
+        SpaAppointmentError(
+          'Failed to update appointment: ${e.toString()}',
+          selectedDate: state.selectedDate,
+          appointments: state.appointments, appointmentsByDay: {},
+        ),
+      );
     }
   }
 
-  
+  // -------------------------------------------------------------
+  //  Crear cita
+  // -------------------------------------------------------------
 
-  /// Crear cita
   Future<void> createAppointment(SpaAppointment appointment) async {
-    emit(SpaAppointmentLoading());
+    emit(
+      SpaAppointmentLoading(
+        selectedDate: state.selectedDate,
+        appointments: state.appointments, appointmentsByDay: {},
+      ),
+    );
+
     try {
       await _repository.createAppointment(appointment);
-      // Emito success correctamente
-      emit(const SpaAppointmentSuccess('Appointment created successfully'));
-      // Recargo la lista (pasando la fecha de la cita para que el refresco sea más eficiente)
+
+      emit(
+        SpaAppointmentSuccess(
+          'Appointment created successfully',
+          selectedDate: state.selectedDate,
+          appointments: state.appointments, appointmentsByDay: {},
+        ),
+      );
+
       await loadAppointments(
         date: appointment.date.toIso8601String().split('T').first,
       );
     } catch (e) {
-      emit(SpaAppointmentError('Failed to create appointment: $e'));
+      emit(
+        SpaAppointmentError(
+          'Failed to create appointment: ${e.toString()}',
+          selectedDate: state.selectedDate,
+          appointments: state.appointments, appointmentsByDay: {},
+        ),
+      );
     }
   }
 
-  /// Completar cita
+  // -------------------------------------------------------------
+  //  Cambiar estado de cita
+  // -------------------------------------------------------------
+
   Future<void> completeAppointment(String id) async {
-    await _updateAppointmentStatus(id, 'COMPLETED', paid: true);
+    await _updateAppointmentStatus(id, 'COMPLETED');
   }
 
-  /// Cancelar cita
   Future<void> cancelAppointment(String id) async {
     await _updateAppointmentStatus(id, 'CANCELLED');
   }
 
-  Future<void> _updateAppointmentStatus(
-    String id,
-    String status, {
-    bool? paid,
-  }) async {
-    emit(SpaAppointmentLoading());
+  Future<void> _updateAppointmentStatus(String id, String status) async {
+    emit(
+      SpaAppointmentLoading(
+        selectedDate: state.selectedDate,
+        appointments: state.appointments, appointmentsByDay: {},
+      ),
+    );
+
     try {
-      await _repository.updateAppointmentStatus(id, status, paid: paid);
-      emit(SpaAppointmentSuccess('Appointment $status successfully'));
-      await loadAppointments();
+      await _repository.updateAppointmentStatus(id, status);
+
+      emit(
+        SpaAppointmentSuccess(
+          'Appointment status changed to $status',
+          selectedDate: state.selectedDate,
+          appointments: state.appointments, appointmentsByDay: {},
+        ),
+      );
+
+      await loadAppointments(
+        date: state.selectedDate.toIso8601String().split('T').first,
+      );
     } catch (e) {
-      emit(SpaAppointmentError('Failed to update appointment: $e'));
+      emit(
+        SpaAppointmentError(
+          'Failed to update status to $status: ${e.toString()}',
+          selectedDate: state.selectedDate,
+          appointments: state.appointments, appointmentsByDay: {},
+        ),
+      );
     }
   }
 }

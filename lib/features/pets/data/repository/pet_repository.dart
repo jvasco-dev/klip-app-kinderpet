@@ -15,4 +15,12 @@ class PetRepository {
     if (token == null) throw Exception('Invalid session, sign in again');
     return await _service.searchByName(name, token);
   }
+
+  Future<List<Pet>> searchPets(String query) async {
+    final hasSession = await _auth.hasValidSession();
+    if (!hasSession) throw Exception('Invalid session, sign in again');
+    final token = await _auth.getAccessToken();
+    if (token == null) throw Exception('Invalid session, sign in again');
+    return await _service.searchPets(query, token);
+  }
 }

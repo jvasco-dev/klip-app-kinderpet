@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
 import 'package:kinder_pet/core/config/theme.dart';
 import 'package:kinder_pet/features/auth/data/repositories/auth_repository.dart';
 import 'package:kinder_pet/features/auth/data/services/auth_service.dart';
@@ -35,7 +34,7 @@ class _DaycareHomeScreenState extends State<DaycareHomeScreen> {
         return const PetsDaycareScreen();
       case 'spa':
         return SpaCalendarWrapper(
-            spaRepository: SpaAppointmentRepository(SpaAppointmentService(Dio()),
+            spaRepository: SpaAppointmentRepository(SpaAppointmentService(),
                 AuthRepository(AuthService())));
       case 'dashboard':
       default:
