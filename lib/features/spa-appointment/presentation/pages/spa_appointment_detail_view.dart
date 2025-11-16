@@ -43,9 +43,9 @@ class SpaAppointmentDetailView extends StatelessWidget {
                   icon: const Icon(Icons.cancel),
                   label: const Text("Cancelar"),
                   onPressed: () {
-                    context.read<SpaAppointmentCubit>().cancelAppointment(
+                    /* context.read<SpaAppointmentCubit>()cancelAppointment(
                       appointment.id,
-                    );
+                    ); */ null;
                     Navigator.pop(context);
                   },
                 ),
