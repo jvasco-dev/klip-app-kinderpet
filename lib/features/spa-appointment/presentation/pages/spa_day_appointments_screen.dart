@@ -6,7 +6,6 @@ import 'package:kinder_pet/features/spa-appointment/data/models/spa_appointment_
 
 class SpaDayAppointmentsScreen extends StatefulWidget {
   final DateTime date;
-
   const SpaDayAppointmentsScreen({super.key, required this.date});
 
   @override
@@ -18,8 +17,6 @@ class _SpaDayAppointmentsScreenState extends State<SpaDayAppointmentsScreen> {
   @override
   void initState() {
     super.initState();
-
-    // Cargar las citas del día
     context.read<SpaAppointmentCubit>().selectDate(widget.date);
   }
 
@@ -31,16 +28,15 @@ class _SpaDayAppointmentsScreenState extends State<SpaDayAppointmentsScreen> {
       ),
       body: BlocBuilder<SpaAppointmentCubit, SpaAppointmentState>(
         builder: (context, state) {
-          // ⛔ Corrección: eliminar state.isInitial
           if (state is SpaAppointmentLoading) {
             return const Center(child: CircularProgressIndicator());
           }
-
           if (state is SpaAppointmentError) {
             return Center(child: Text(state.message));
           }
 
-          final appointments = state.appointments;
+          // ¡AHORA SÍ! Usa el campo correcto
+          final appointments = state.appointmentsForSelectedDay;
 
           if (appointments.isEmpty) {
             return const Center(child: Text("No hay citas para este día."));
@@ -49,20 +45,16 @@ class _SpaDayAppointmentsScreenState extends State<SpaDayAppointmentsScreen> {
           return ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: appointments.length,
-            itemBuilder: (_, index) {
-              return _appointmentCard(appointments[index]);
-            },
+            itemBuilder: (_, index) => _appointmentCard(appointments[index]),
           );
         },
       ),
     );
   }
 
-  // ⛔ Corrección: el método fue eliminado y era requerido por la UI
-Widget _appointmentCard(SpaAppointment item) {
+  Widget _appointmentCard(SpaAppointment item) {
     final hour = item.date.hour.toString().padLeft(2, '0');
     final minute = item.date.minute.toString().padLeft(2, '0');
-
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: ListTile(

@@ -35,7 +35,7 @@ class DaycareFeatureShell extends StatelessWidget {
           create: (_) => DaycareBloc(daycareRepo)..add( FetchDaycare()),
         ),
         BlocProvider(
-          create: (_) => SpaAppointmentCubit(spaRepo)..loadAppointments(),
+          create: (_) => SpaAppointmentCubit(spaRepo)..loadAppointmentsForSelectedDay(),
         ),
         BlocProvider(create: (_) => NavigationCubit()),
       ],

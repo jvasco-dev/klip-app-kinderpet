@@ -16,54 +16,60 @@ class SpaAppointmentsCalendarView extends StatefulWidget {
 
 class _SpaAppointmentsCalendarViewState
     extends State<SpaAppointmentsCalendarView>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin<SpaAppointmentsCalendarView> {
   @override
-  bool get wantKeepAlive => true; // ← Mantiene el estado del widget
+  bool get wantKeepAlive => true;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    final cubit = context.read<SpaAppointmentCubit>();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final cubit = context.read<SpaAppointmentCubit>();
 
-    // Forzamos carga de TODAS las citas si no hay datos
-    if (cubit.state.appointments.isEmpty) {
-      cubit.loadAppointments();
-    }
+      // Siempre recargamos TODAS las citas al entrar o volver al calendario
+      cubit.loadAllAppointmentsForCalendar();
 
-    // También cargamos las citas del día seleccionado
-    cubit.loadCurrentSelectedDayAppointments();
+      // Y cargamos las del día seleccionado
+      cubit.loadCurrentSelectedDayAppointments();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    super.build(context); // ← NECESARIO por AutomaticKeepAliveClientMixin
+    super.build(context);
 
     return BlocBuilder<SpaAppointmentCubit, SpaAppointmentState>(
-      // ← ESCUCHA TODOS los cambios del Cubit
+      buildWhen: (prev, current) =>
+          prev.appointments.length != current.appointments.length,
       builder: (context, state) {
-        final selected = state.selectedDate;
-
-        // Construcción del mapa de citas por día
         final Map<String, int> appointmentsByDay = {};
-
-        for (final appointment in state.appointments) {
-          final key = appointment.date.toIso8601String().split('T').first;
+        for (final a in state.appointments) {
+          final key = DateTime(
+            a.date.year,
+            a.date.month,
+            a.date.day,
+          ).toIso8601String().substring(0, 10);
           appointmentsByDay[key] = (appointmentsByDay[key] ?? 0) + 1;
         }
 
         return Column(
           children: [
-            // Loading mientras carga por primera vez
-            if (state is SpaAppointmentLoading && state.appointments.isEmpty)
+            if (state.appointments.isEmpty)
               const Padding(
                 padding: EdgeInsets.all(32),
-                child: CircularProgressIndicator(),
+                child: Column(
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text("Cargando citas del mes..."),
+                  ],
+                ),
               ),
 
             Expanded(
               child: CustomSpaCalendar(
-                selectedDate: selected,
+                selectedDate: state.selectedDate,
                 appointmentsByDay: appointmentsByDay,
                 onDaySelected: (date) {
                   context.read<SpaAppointmentCubit>().selectDate(date);
