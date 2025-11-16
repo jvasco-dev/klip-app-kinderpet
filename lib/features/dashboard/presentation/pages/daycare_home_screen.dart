@@ -1,100 +1,50 @@
 import 'package:flutter/material.dart';
-import 'package:kinder_pet/core/config/theme.dart';
-import 'package:kinder_pet/features/auth/data/repositories/auth_repository.dart';
-import 'package:kinder_pet/features/auth/data/services/auth_service.dart';
-import 'package:kinder_pet/features/spa-appointment/data/service/spa_appointment_service.dart';
-import 'package:kinder_pet/features/spa-appointment/data/repository/spa_appointment_repository.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kinder_pet/features/pets_daycare/presentation/cubit/navigation_cubit.dart';
 import 'package:kinder_pet/features/spa-appointment/presentation/widgets/spa_calendar_wrapper.dart';
 import 'package:kinder_pet/shared/widgets/common_drawer.dart';
 import 'package:kinder_pet/features/dashboard/presentation/pages/daycare_dashboard_screen.dart';
 import 'package:kinder_pet/features/pets_daycare/presentation/pages/pets_daycare_screen.dart';
+import 'package:kinder_pet/shared/widgets/common_keep_alive_wrapper.dart';
 
-class DaycareHomeScreen extends StatefulWidget {
-  const DaycareHomeScreen({super.key});
+class DaycareHomeScreen extends StatelessWidget {
+  DaycareHomeScreen({Key? key}) : super(key: key);
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  @override
-  State<DaycareHomeScreen> createState() => _DaycareHomeScreenState();
-
-  
-}
-
-class _DaycareHomeScreenState extends State<DaycareHomeScreen> {
-  String _selectedPage = 'dashboard';
-
-  void _navigateTo(String page) {
-    setState(() {
-      _selectedPage = page;
-    });
-    Navigator.pop(context);
-  }
-
-  Widget _getCurrentPage() {
-    switch (_selectedPage) {
-      case 'petsDaycare':
-        return const PetsDaycareScreen();
-      case 'spa':
-        return SpaCalendarWrapper(
-            spaRepository: SpaAppointmentRepository(SpaAppointmentService(),
-                AuthRepository(AuthService())));
-      case 'dashboard':
-      default:
-        return const DaycareDashboardScreen();
-    }
-  }
-
-  String _getTitle() {
-    switch (_selectedPage) {
-      case 'petsDaycare':
-        return 'Ingresar Mascota';
-      case 'spa':
-        return 'Spa Calendar';
-      case 'dashboard':
-      default:
-        return 'Daycare Pets';
-    }
-  }
-
-  void _onPopInvoked(bool didPop, Object? result) {
-    // Si la navegación hacia atrás fue prevenida (porque no estábamos en el dashboard),
-    // entonces cambiamos la página actual al dashboard.
-    if (!didPop) {
-      setState(() {
-        _selectedPage = 'dashboard';
-      });
-    }
-  }
+  final _pages = const [
+    DaycareDashboardScreen(),
+    PetsDaycareScreen(),
+    SpaCalendarWrapper(), // ahora mantiene estado perfecto
+  ];
 
   @override
   Widget build(BuildContext context) {
+    final currentTab = context.watch<NavigationCubit>().state;
+
     return PopScope(
-      canPop: _selectedPage == 'dashboard',
-      onPopInvokedWithResult: _onPopInvoked,
+      canPop: false,
+      onPopInvoked: (_) {
+        if (currentTab != DaycareTab.dashboard) {
+          context.read<NavigationCubit>().selectTab(DaycareTab.dashboard);
+        }
+      },
       child: Scaffold(
-        backgroundColor: AppColors.warmBeige,
-        drawer: CommonDrawer(onNavigate: _navigateTo),
+        key: _scaffoldKey,
+        drawer: const CommonDrawer(),
         appBar: AppBar(
-          backgroundColor: AppColors.warmBeige,
-          elevation: 0,
-          leading: Builder(
-            builder: (context) => IconButton(
-              onPressed: () => Scaffold.of(context).openDrawer(),
-              icon: const Icon(Icons.menu, color: AppColors.brownText),
-            ),
-          ),
+          title: Text(context.watch<NavigationCubit>().title),
           centerTitle: true,
-          title: Padding(
-            padding: const EdgeInsets.only(top: 20),
-            child: Text(
-              _getTitle(),
-              style: const TextStyle(
-                color: AppColors.brownText,
-                fontWeight: FontWeight.bold,
-                fontSize: 22,
-              ),
-            ),
+          leading: IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () => _scaffoldKey.currentState?.openDrawer(),
           ),
         ),
-        body: _getCurrentPage(),
+        body: IndexedStack(
+          index: currentTab.index,
+          children: _pages
+              .map((page) => KeepAliveWrapper(child: page))
+              .toList(),
+        ),
       ),
     );
   }

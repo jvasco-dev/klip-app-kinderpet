@@ -34,12 +34,10 @@ class CustomSpaCalendar extends StatelessWidget {
 
     // Cálculo de proporción de celda para minimizar overflow
     final screenWidth = MediaQuery.of(context).size.width;
-    const horizontalOuterPadding =
-        24.0;
+    const horizontalOuterPadding = 24.0;
     const gridSpacing = 12.0;
     final availableWidth = screenWidth - horizontalOuterPadding;
     final cellWidth = (availableWidth - (7 - 1) * gridSpacing) / 7;
-    // queremos que la altura sea similar al ancho, pero algo menor para caber encabezado y padding
     final desiredCellHeight = cellWidth * 0.95;
     double childAspectRatio = cellWidth / desiredCellHeight;
     // clamp para evitar valores extremos en pantallas pequeñas/grandes
