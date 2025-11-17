@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:kinder_pet/core/config/theme.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 class CustomSpaCalendar extends StatelessWidget {
   final DateTime selectedDate;
   final Map<String, int> appointmentsByDay;
-  final ValueChanged<DateTime> onDaySelected;
+  final Function(DateTime) onDaySelected;
 
   const CustomSpaCalendar({
     super.key,
@@ -15,271 +16,191 @@ class CustomSpaCalendar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentMonth = DateTime(selectedDate.year, selectedDate.month);
-    final firstDayOfMonth = DateTime(currentMonth.year, currentMonth.month, 1);
+    // final theme = Theme.of(context);
 
-    // Primer día de la semana ajustado para que Lunes=0
-    final firstWeekday = (firstDayOfMonth.weekday + 6) % 7;
-
-    final daysInMonth = DateTime(
-      currentMonth.year,
-      currentMonth.month + 1,
-      0,
-    ).day;
-
-    // total celdas: días previos + días del mes + días para completar la última fila
-    final baseCells = firstWeekday + daysInMonth;
-    final extraToFill = (baseCells % 7) == 0 ? 0 : (7 - (baseCells % 7));
-    final totalCells = baseCells + extraToFill;
-
-    // Cálculo de proporción de celda para minimizar overflow
-    final screenWidth = MediaQuery.of(context).size.width;
-    const horizontalOuterPadding = 24.0;
-    const gridSpacing = 12.0;
-    final availableWidth = screenWidth - horizontalOuterPadding;
-    final cellWidth = (availableWidth - (7 - 1) * gridSpacing) / 7;
-    final desiredCellHeight = cellWidth * 0.95;
-    double childAspectRatio = cellWidth / desiredCellHeight;
-    // clamp para evitar valores extremos en pantallas pequeñas/grandes
-    if (childAspectRatio.isInfinite || childAspectRatio.isNaN) {
-      childAspectRatio = 1.0;
-    }
-    childAspectRatio = childAspectRatio.clamp(0.7, 1.2);
-
-    return Column(
-      children: [
-        const SizedBox(height: 12),
-        // Nombre del mes centrado (opcional, si ya tienes otro header lo puedes eliminar)
-        Text(
-          '${_monthName(selectedDate.month)} ${selectedDate.year}',
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: AppColors.brownText,
+    return Container(
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.lightBeigeAccent, // Fondo suave y cálido
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
-        ),
-        const SizedBox(height: 10),
-
-        // Días de la semana (L M X J V S D)
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Row(
-            children: const [
-              Expanded(child: Center(child: _DayHeader('L'))),
-              Expanded(child: Center(child: _DayHeader('M'))),
-              Expanded(child: Center(child: _DayHeader('X'))),
-              Expanded(child: Center(child: _DayHeader('J'))),
-              Expanded(child: Center(child: _DayHeader('V'))),
-              Expanded(child: Center(child: _DayHeader('S'))),
-              Expanded(child: Center(child: _DayHeader('D'))),
-            ],
-          ),
-        ),
-
-        const SizedBox(height: 12),
-
-        // Grid de días
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: GridView.builder(
-            itemCount: totalCells,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 7,
-              crossAxisSpacing: gridSpacing,
-              mainAxisSpacing: gridSpacing,
-              childAspectRatio: childAspectRatio,
-            ),
-            itemBuilder: (context, index) {
-              // celdas previas al mes (mes anterior)
-              if (index < firstWeekday) {
-                final prevDate = firstDayOfMonth.subtract(
-                  Duration(days: firstWeekday - index),
-                );
-                return _CalendarDay(
-                  date: prevDate,
-                  isCurrentMonth: false,
-                  count: 0,
-                  selected: _isSameDay(prevDate, selectedDate),
-                  onTap: null,
-                );
-              }
-
-              final day = index - firstWeekday + 1;
-
-              // si el índice cae en la zona de extra (mes siguiente) devolvemos celdas del siguiente mes
-              if (day > daysInMonth) {
-                final nextDay = day - daysInMonth;
-                final nextDate = DateTime(
-                  currentMonth.year,
-                  currentMonth.month + 1,
-                  nextDay,
-                );
-                return _CalendarDay(
-                  date: nextDate,
-                  isCurrentMonth: false,
-                  count: 0,
-                  selected: _isSameDay(nextDate, selectedDate),
-                  onTap: null,
-                );
-              }
-
-              // día dentro del mes actual
-              final date = DateTime(currentMonth.year, currentMonth.month, day);
-              final key = "${date.year}-${date.month}-${date.day}";
-              final count = appointmentsByDay[key] ?? 0;
-
-              return _CalendarDay(
-                date: date,
-                isCurrentMonth: true,
-                count: count,
-                selected: _isSameDay(date, selectedDate),
-                onTap: () => onDaySelected(date),
-              );
-            },
-          ),
-        ),
-
-        const SizedBox(height: 12),
-      ],
-    );
-  }
-
-  bool _isSameDay(DateTime a, DateTime b) {
-    return a.year == b.year && a.month == b.month && a.day == b.day;
-  }
-
-  String _monthName(int month) {
-    const names = [
-      '',
-      'Enero',
-      'Febrero',
-      'Marzo',
-      'Abril',
-      'Mayo',
-      'Junio',
-      'Julio',
-      'Agosto',
-      'Septiembre',
-      'Octubre',
-      'Noviembre',
-      'Diciembre',
-    ];
-    return names[month];
-  }
-}
-
-/// Header pequeño para cada columna
-class _DayHeader extends StatelessWidget {
-  final String label;
-  const _DayHeader(this.label, {super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      label,
-      style: const TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.bold,
-        color: AppColors.brownText,
+        ],
       ),
-    );
-  }
-}
+      child: TableCalendar(
+        firstDay: DateTime.now().subtract(const Duration(days: 365)),
+        lastDay: DateTime.now().add(const Duration(days: 730)),
+        focusedDay: selectedDate,
+        selectedDayPredicate: (day) => isSameDay(selectedDate, day),
+        calendarFormat: CalendarFormat.month,
+        startingDayOfWeek: StartingDayOfWeek.monday,
 
-/// Celda del calendario — usa LayoutBuilder + FittedBox para evitar overflow
-class _CalendarDay extends StatelessWidget {
-  final DateTime date;
-  final bool isCurrentMonth;
-  final bool selected;
-  final int count;
-  final VoidCallback? onTap;
+        // HEADER
+        headerStyle: HeaderStyle(
+          formatButtonVisible: false,
+          titleCentered: true,
+          titleTextStyle: const TextStyle(
+            color: AppColors.brownText,
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+          ),
+          leftChevronIcon: const Icon(
+            Icons.chevron_left,
+            color: AppColors.dogOrange,
+            size: 28,
+          ),
+          rightChevronIcon: const Icon(
+            Icons.chevron_right,
+            color: AppColors.dogOrange,
+            size: 28,
+          ),
+          headerPadding: const EdgeInsets.symmetric(vertical: 16),
+        ),
 
-  const _CalendarDay({
-    super.key,
-    required this.date,
-    this.isCurrentMonth = true,
-    this.selected = false,
-    this.count = 0,
-    this.onTap,
-  });
+        // DÍAS DE LA SEMANA (Lun, Mar...)
+        daysOfWeekStyle: DaysOfWeekStyle(
+          weekdayStyle: const TextStyle(
+            color: AppColors.warmBrown,
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+          ),
+          weekendStyle: const TextStyle(
+            color: AppColors.goldenTan,
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+          ),
+        ),
 
-  @override
-  Widget build(BuildContext context) {
-    final dayStr = date.day.toString();
-    final countStr = "$count / 3";
+        // ESTILO GENERAL DEL CALENDARIO
+        calendarStyle: CalendarStyle(
+          outsideDaysVisible: false,
+          defaultTextStyle: const TextStyle(
+            color: AppColors.hardText,
+            fontWeight: FontWeight.w500,
+            fontSize: 17,
+          ),
+          weekendTextStyle: const TextStyle(
+            color: AppColors.goldenTan,
+            fontWeight: FontWeight.w500,
+            fontSize: 17,
+          ),
 
-    // Colores base (usa tu AppColors)
-    Color bgColor = Colors.white;
-    Color borderColor = AppColors.dogOrange;
-    Color textColor = Colors.black;
+          // Día actual
+          todayDecoration: BoxDecoration(
+            color: Colors.transparent,
+            border: Border.all(color: AppColors.dogOrange, width: 2.5),
+            shape: BoxShape.circle,
+          ),
+          todayTextStyle: const TextStyle(
+            color: AppColors.dogOrange,
+            fontWeight: FontWeight.bold,
+            fontSize: 17,
+          ),
 
-    if (!isCurrentMonth) {
-      bgColor = AppColors.dogOrange.withOpacity(0.12);
-      borderColor = Colors.transparent;
-      textColor = Colors.black45;
-    }
+          // Día seleccionado
+          selectedDecoration: const BoxDecoration(
+            color: AppColors.dogOrange,
+            shape: BoxShape.circle,
+          ),
+          selectedTextStyle: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 17,
+          ),
+        ),
 
-    if (selected) {
-      bgColor = AppColors.dogOrange;
-      textColor = Colors.white;
-      borderColor = AppColors.dogOrange;
-    }
+        // BADGE DE CITAS (número de citas por día)
+        calendarBuilders: CalendarBuilders(
+          markerBuilder: (context, date, events) {
+            final key = "${date.year}-${date.month}-${date.day}";
+            final count = appointmentsByDay[key] ?? 0;
+            if (count == 0) return null;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          // tamaños relativos para que todo quepa sin overflow
-          final maxH = constraints.maxHeight;
-          final dayBoxHeight = maxH * 0.55; // espacio para número
-          final countBoxHeight = maxH * 0.25; // espacio para contador
-
-          return Container(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            decoration: BoxDecoration(
-              color: bgColor,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: borderColor,
-                width: selected ? 2.0 : 1.2,
+            return Positioned(
+              bottom: 6,
+              child: Container(
+                width: 26,
+                height: 26,
+                decoration: BoxDecoration(
+                  color: count >= 5
+                      ? AppColors
+                            .softAlert // Rojo si está lleno
+                      : AppColors.dogOrange, // Naranja normal
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2.5),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 4,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Text(
+                    count > 9 ? '9+' : '$count',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11,
+                    ),
+                  ),
+                ),
               ),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                SizedBox(
-                  height: dayBoxHeight,
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      dayStr,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: textColor,
-                      ),
-                    ),
+            );
+          },
+
+          // Día seleccionado (con animación)
+          selectedBuilder: (context, date, _) {
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              margin: const EdgeInsets.all(6),
+              decoration: const BoxDecoration(
+                color: AppColors.dogOrange,
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Text(
+                  '${date.day}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 17,
                   ),
                 ),
-                SizedBox(
-                  height: countBoxHeight,
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      countStr,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: selected ? Colors.white70 : AppColors.dogOrange,
-                      ),
-                    ),
+              ),
+            );
+          },
+
+          // Día actual
+          todayBuilder: (context, date, _) {
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              margin: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                border: Border.all(color: AppColors.dogOrange, width: 2.5),
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Text(
+                  '${date.day}',
+                  style: const TextStyle(
+                    color: AppColors.dogOrange,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 17,
                   ),
                 ),
-              ],
-            ),
-          );
+              ),
+            );
+          },
+        ),
+
+        onDaySelected: (selectedDay, focusedDay) {
+          onDaySelected(selectedDay);
         },
       ),
     );

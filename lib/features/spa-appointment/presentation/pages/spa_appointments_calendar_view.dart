@@ -67,7 +67,9 @@ class _SpaAppointmentsCalendarViewState
                 ),
               ),
 
-            Expanded(
+            SizedBox(
+              height:
+                  420, // ← Tú eliges: 380, 400, 420, 450... (420 queda perfecto en casi todos los teléfonos)
               child: CustomSpaCalendar(
                 selectedDate: state.selectedDate,
                 appointmentsByDay: appointmentsByDay,
