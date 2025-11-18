@@ -63,12 +63,11 @@ class _SpaAppointmentFormState extends State<SpaAppointmentForm> {
               if (_formKey.currentState!.validate()) {
                 final appointment = SpaAppointment(
                   id: '',
-                  service: _serviceController.text,
                   notes: _descController.text,
                   amount: double.tryParse(_priceController.text) ?? 0.0,
                   date: _selectedDate!,
                   status: 'SCHEDULED',
-                  pet: null,
+                  pet: '',
                 );
                 widget.onSubmit(appointment);
               }

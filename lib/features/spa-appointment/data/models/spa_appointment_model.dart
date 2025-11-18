@@ -1,9 +1,7 @@
-import 'package:kinder_pet/features/pets/data/models/pet_model.dart';
 
 class SpaAppointment {
   final String id;
-  final Pet? pet;
-  final String service;
+  final String pet;
   final String? notes;
   final double amount;
   final DateTime date;
@@ -11,8 +9,7 @@ class SpaAppointment {
 
   SpaAppointment({
     required this.id,
-    this.pet,
-    required this.service,
+    required this.pet,
     this.notes,
     required this.amount,
     required this.date,
@@ -22,20 +19,18 @@ class SpaAppointment {
   factory SpaAppointment.fromJson(Map<String, dynamic> json) {
     return SpaAppointment(
       id: json['_id'] ?? '',
-      pet: json['pet'] != null ? Pet.fromJson(json['pet']) : null,
-      service: json['service'] ?? 'Baño',
+      pet: json['pet'].toString() ,
       notes: json['notes']?.toString(),
       amount: (json['amount'] is num) ? (json['amount'] as num).toDouble() : 0.0,
       date: DateTime.tryParse(json['date'] ?? '') ?? DateTime.now(),
-      status: json['status'] ?? 'SCHEDULED',
+      status: json['status'] ?? 'DONE',
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       '_id': id,
-      'pet': pet?.toJson(),
-      'service': service,
+      'pet': pet,
       "notes": notes,
       'amount': amount,
       'date': date.toIso8601String(),
@@ -46,8 +41,7 @@ class SpaAppointment {
   /// ✅ Nuevo método copyWith
   SpaAppointment copyWith({
     String? id,
-    Pet? pet,
-    String? service,
+    String? pet,
     String? notes,
     double? amount,
     DateTime? date,
@@ -56,8 +50,7 @@ class SpaAppointment {
   }) {
     return SpaAppointment(
       id: id ?? this.id,
-      pet: pet ?? this.pet,
-      service: service ?? this.service,
+      pet: this.pet,
       notes: notes ?? this.notes,
       amount: amount ?? this.amount,
       date: date ?? this.date,

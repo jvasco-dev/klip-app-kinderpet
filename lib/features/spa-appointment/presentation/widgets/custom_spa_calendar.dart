@@ -16,18 +16,17 @@ class CustomSpaCalendar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // final theme = Theme.of(context);
-
     return Container(
       margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: AppColors.lightBeigeAccent, // Fondo suave y cálido
+        color: AppColors.lightBeigeAccent,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -39,69 +38,62 @@ class CustomSpaCalendar extends StatelessWidget {
         calendarFormat: CalendarFormat.month,
         startingDayOfWeek: StartingDayOfWeek.monday,
 
-        // HEADER
-        headerStyle: HeaderStyle(
+        headerStyle: const HeaderStyle(
           formatButtonVisible: false,
           titleCentered: true,
-          titleTextStyle: const TextStyle(
+          titleTextStyle: TextStyle(
             color: AppColors.brownText,
-            fontSize: 22,
+            fontSize: 21,
             fontWeight: FontWeight.bold,
           ),
-          leftChevronIcon: const Icon(
+          leftChevronIcon: Icon(
             Icons.chevron_left,
             color: AppColors.dogOrange,
             size: 28,
           ),
-          rightChevronIcon: const Icon(
+          rightChevronIcon: Icon(
             Icons.chevron_right,
             color: AppColors.dogOrange,
             size: 28,
           ),
-          headerPadding: const EdgeInsets.symmetric(vertical: 16),
+          headerPadding: EdgeInsets.symmetric(vertical: 14),
         ),
 
-        // DÍAS DE LA SEMANA (Lun, Mar...)
-        daysOfWeekStyle: DaysOfWeekStyle(
-          weekdayStyle: const TextStyle(
+        daysOfWeekStyle: const DaysOfWeekStyle(
+          weekdayStyle: TextStyle(
             color: AppColors.warmBrown,
             fontWeight: FontWeight.w600,
-            fontSize: 14,
+            fontSize: 13,
           ),
-          weekendStyle: const TextStyle(
+          weekendStyle: TextStyle(
             color: AppColors.goldenTan,
             fontWeight: FontWeight.w600,
-            fontSize: 14,
+            fontSize: 13,
           ),
         ),
 
-        // ESTILO GENERAL DEL CALENDARIO
         calendarStyle: CalendarStyle(
           outsideDaysVisible: false,
           defaultTextStyle: const TextStyle(
             color: AppColors.hardText,
-            fontWeight: FontWeight.w500,
             fontSize: 17,
+            fontWeight: FontWeight.w500,
           ),
           weekendTextStyle: const TextStyle(
             color: AppColors.goldenTan,
-            fontWeight: FontWeight.w500,
             fontSize: 17,
+            fontWeight: FontWeight.w500,
           ),
-
-          // Día actual
           todayDecoration: BoxDecoration(
             color: Colors.transparent,
-            border: Border.all(color: AppColors.dogOrange, width: 2.5),
             shape: BoxShape.circle,
+            border: Border.all(color: AppColors.dogOrange, width: 2.5),
           ),
           todayTextStyle: const TextStyle(
             color: AppColors.dogOrange,
             fontWeight: FontWeight.bold,
             fontSize: 17,
           ),
-
-          // Día seleccionado
           selectedDecoration: const BoxDecoration(
             color: AppColors.dogOrange,
             shape: BoxShape.circle,
@@ -113,7 +105,6 @@ class CustomSpaCalendar extends StatelessWidget {
           ),
         ),
 
-        // BADGE DE CITAS (número de citas por día)
         calendarBuilders: CalendarBuilders(
           markerBuilder: (context, date, events) {
             final key = "${date.year}-${date.month}-${date.day}";
@@ -121,15 +112,12 @@ class CustomSpaCalendar extends StatelessWidget {
             if (count == 0) return null;
 
             return Positioned(
-              bottom: 6,
+              bottom: 4,
               child: Container(
                 width: 26,
                 height: 26,
                 decoration: BoxDecoration(
-                  color: count >= 5
-                      ? AppColors
-                            .softAlert // Rojo si está lleno
-                      : AppColors.dogOrange, // Naranja normal
+                  color: count >= 5 ? AppColors.softAlert : AppColors.dogOrange,
                   shape: BoxShape.circle,
                   border: Border.all(color: Colors.white, width: 2.5),
                   boxShadow: const [
@@ -145,8 +133,8 @@ class CustomSpaCalendar extends StatelessWidget {
                     count > 9 ? '9+' : '$count',
                     style: const TextStyle(
                       color: Colors.white,
-                      fontWeight: FontWeight.bold,
                       fontSize: 11,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
@@ -154,54 +142,46 @@ class CustomSpaCalendar extends StatelessWidget {
             );
           },
 
-          // Día seleccionado (con animación)
-          selectedBuilder: (context, date, _) {
-            return AnimatedContainer(
-              duration: const Duration(milliseconds: 220),
-              margin: const EdgeInsets.all(6),
-              decoration: const BoxDecoration(
-                color: AppColors.dogOrange,
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Text(
-                  '${date.day}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 17,
-                  ),
-                ),
-              ),
-            );
-          },
-
-          // Día actual
-          todayBuilder: (context, date, _) {
-            return AnimatedContainer(
-              duration: const Duration(milliseconds: 220),
-              margin: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                border: Border.all(color: AppColors.dogOrange, width: 2.5),
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Text(
-                  '${date.day}',
-                  style: const TextStyle(
-                    color: AppColors.dogOrange,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 17,
-                  ),
-                ),
-              ),
-            );
-          },
+          selectedBuilder: (context, date, _) =>
+              _buildDayCircle(date, AppColors.dogOrange, Colors.white),
+          todayBuilder: (context, date, _) => _buildDayCircle(
+            date,
+            Colors.transparent,
+            AppColors.dogOrange,
+            border: true,
+          ),
         ),
 
-        onDaySelected: (selectedDay, focusedDay) {
-          onDaySelected(selectedDay);
-        },
+        onDaySelected: (day, _) => onDaySelected(day),
+      ),
+    );
+  }
+
+  Widget _buildDayCircle(
+    DateTime date,
+    Color bgColor,
+    Color textColor, {
+    bool border = false,
+  }) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 220),
+      margin: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: bgColor,
+        shape: BoxShape.circle,
+        border: border
+            ? Border.all(color: AppColors.dogOrange, width: 2.5)
+            : null,
+      ),
+      child: Center(
+        child: Text(
+          '${date.day}',
+          style: TextStyle(
+            color: textColor,
+            fontWeight: FontWeight.bold,
+            fontSize: 17,
+          ),
+        ),
       ),
     );
   }
