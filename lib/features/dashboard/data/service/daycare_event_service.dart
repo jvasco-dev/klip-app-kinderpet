@@ -7,14 +7,15 @@ class DaycareEventService {
   Dio get _dio => Dio(
     BaseOptions(
       baseUrl: dotenv.env['API_URL']!,
-      connectTimeout: const Duration(seconds: 5),
-      receiveTimeout: const Duration(seconds: 5),
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 15),
     ),
   );
 
   Future<void> createDaycareEvent(String daycareId, String token) async {
     try {
-      await _dio.post(
+      debugPrint('🔹 Creando evento de guardería para daycare: $daycareId');
+      final response = await _dio.post(
         '/events',
         data: {'daycare': daycareId},
         options: Options(
@@ -24,9 +25,12 @@ class DaycareEventService {
           },
         ),
       );
-      debugPrint('Evento creado');
+      debugPrint(
+        '✅ Evento creado exitosamente. Status: ${response.statusCode}',
+      );
     } on DioException catch (e) {
-      debugPrint(e.message);
+      debugPrint('❌ Error en createDaycareEvent: ${e.message}');
+      debugPrint('❌ Response: ${e.response?.data}');
       throw Exception(_handleDioError(e));
     }
   }
@@ -34,6 +38,7 @@ class DaycareEventService {
   /// 🔹 Obtiene los eventos en progreso
   Future<List<DaycareEvent>> getInProgressEvents(String token) async {
     try {
+      debugPrint('🔹 Obteniendo eventos en progreso...');
       final response = await _dio.get(
         '/events',
         queryParameters: {'status': 'IN_PROGRESS'},
@@ -45,13 +50,20 @@ class DaycareEventService {
         ),
       );
 
+      debugPrint(
+        '✅ Petición getInProgressEvents exitosa. Status: ${response.statusCode}',
+      );
+
       final List<dynamic> jsonList = response.data;
       final List<DaycareEvent> data = jsonList
           .map((json) => DaycareEvent.fromJson(json))
           .toList();
 
+      debugPrint('📊 Se obtuvieron ${data.length} eventos en progreso');
       return data;
     } on DioException catch (e) {
+      debugPrint('❌ Error en getInProgressEvents: ${e.message}');
+      debugPrint('❌ Response: ${e.response?.data}');
       throw Exception(_handleDioError(e));
     }
   }
@@ -60,8 +72,9 @@ class DaycareEventService {
   Future<void> endDaycareEvent(String eventId, String token) async {
     try {
       final now = DateTime.now().toUtc().toIso8601String();
+      debugPrint('🔹 Finalizando evento: $eventId a las $now');
 
-      await _dio.patch(
+      final response = await _dio.patch(
         '/events/$eventId',
         data: {'endDate': now},
         options: Options(
@@ -71,7 +84,12 @@ class DaycareEventService {
           },
         ),
       );
+      debugPrint(
+        '✅ Evento finalizado exitosamente. Status: ${response.statusCode}',
+      );
     } on DioException catch (e) {
+      debugPrint('❌ Error en endDaycareEvent: ${e.message}');
+      debugPrint('❌ Response: ${e.response?.data}');
       throw Exception(_handleDioError(e));
     }
   }

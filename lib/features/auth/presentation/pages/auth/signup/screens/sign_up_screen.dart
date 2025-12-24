@@ -22,6 +22,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
       // Simula registro
       Future.delayed(const Duration(seconds: 2), () {
+        // Log para validar suposición: verificar si el contexto sigue montado
+        print(
+          'DEBUG: Verificando si el contexto está montado en SignUp después del delay',
+        );
+
+        if (!mounted) {
+          print('DEBUG: Widget no montado, evitando setState y Navigator');
+          return;
+        }
+
         setState(() => _isLoading = false);
         Navigator.pushReplacementNamed(context, AppRoutes.signIn);
       });

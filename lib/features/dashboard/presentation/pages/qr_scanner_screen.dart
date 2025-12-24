@@ -3,7 +3,6 @@ import 'package:kinder_pet/core/config/theme.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'dart:math' as math;
 
-
 class QRScannerScreen extends StatefulWidget {
   const QRScannerScreen({super.key});
 
@@ -71,15 +70,12 @@ class _QRScannerScreenState extends State<QRScannerScreen>
       body: Stack(
         children: [
           /// 📷 Cámara activa
-          MobileScanner(
-            controller: _controller,
-            onDetect: _handleDetection,
-          ),
+          MobileScanner(controller: _controller, onDetect: _handleDetection),
 
           /// 🔹 Overlay con marco
           ColorFiltered(
             colorFilter: ColorFilter.mode(
-              Colors.black.withOpacity(0.6),
+              Colors.black.withValues(alpha: 0.6),
               BlendMode.srcOut,
             ),
             child: Stack(
@@ -170,7 +166,7 @@ class _QRScannerScreenState extends State<QRScannerScreen>
               child: Text(
                 'Align the QR code within the frame',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white.withValues(alpha: 0.9),
                   fontSize: 14,
                 ),
               ),

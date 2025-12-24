@@ -112,29 +112,36 @@ class CustomSpaCalendar extends StatelessWidget {
             if (count == 0) return null;
 
             return Positioned(
-              bottom: 4,
+              bottom: 2,
+              right: 2,
               child: Container(
-                width: 26,
-                height: 26,
+                constraints: const BoxConstraints(
+                  minWidth: 18,
+                  minHeight: 18,
+                  maxWidth: 24,
+                  maxHeight: 24,
+                ),
                 decoration: BoxDecoration(
-                  color: count >= 5 ? AppColors.softAlert : AppColors.dogOrange,
+                  color: _getMarkerColor(count),
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2.5),
-                  boxShadow: const [
+                  border: Border.all(color: Colors.white, width: 1.5),
+                  boxShadow: [
                     BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 4,
-                      offset: Offset(0, 2),
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 2,
+                      offset: const Offset(0, 1),
                     ),
                   ],
                 ),
                 child: Center(
-                  child: Text(
-                    count > 9 ? '9+' : '$count',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
+                  child: FittedBox(
+                    child: Text(
+                      _formatAppointmentCount(count),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -149,7 +156,9 @@ class CustomSpaCalendar extends StatelessWidget {
             Colors.transparent,
             AppColors.dogOrange,
             border: true,
+            isToday: true,
           ),
+          defaultBuilder: (context, date, _) => _buildDefaultDay(date),
         ),
 
         onDaySelected: (day, _) => onDaySelected(day),
@@ -162,6 +171,7 @@ class CustomSpaCalendar extends StatelessWidget {
     Color bgColor,
     Color textColor, {
     bool border = false,
+    bool isToday = false,
   }) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 220),
@@ -170,7 +180,16 @@ class CustomSpaCalendar extends StatelessWidget {
         color: bgColor,
         shape: BoxShape.circle,
         border: border
-            ? Border.all(color: AppColors.dogOrange, width: 2.5)
+            ? Border.all(color: AppColors.dogOrange, width: isToday ? 3.0 : 2.5)
+            : null,
+        boxShadow: isToday
+            ? [
+                BoxShadow(
+                  color: AppColors.dogOrange.withOpacity(0.3),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ]
             : null,
       ),
       child: Center(
@@ -178,11 +197,43 @@ class CustomSpaCalendar extends StatelessWidget {
           '${date.day}',
           style: TextStyle(
             color: textColor,
-            fontWeight: FontWeight.bold,
+            fontWeight: isToday ? FontWeight.w800 : FontWeight.bold,
+            fontSize: isToday ? 18 : 17,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDefaultDay(DateTime date) {
+    final isWeekend =
+        date.weekday == DateTime.saturday || date.weekday == DateTime.sunday;
+
+    return Container(
+      margin: const EdgeInsets.all(6),
+      child: Center(
+        child: Text(
+          '${date.day}',
+          style: TextStyle(
+            color: isWeekend ? AppColors.goldenTan : AppColors.hardText,
+            fontWeight: FontWeight.w500,
             fontSize: 17,
           ),
         ),
       ),
     );
+  }
+
+  Color _getMarkerColor(int count) {
+    if (count >= 10) return AppColors.softAlert;
+    if (count >= 5) return Colors.deepOrange;
+    return AppColors.dogOrange;
+  }
+
+  String _formatAppointmentCount(int count) {
+    if (count >= 20) return '20+';
+    if (count >= 15) return '15+';
+    if (count >= 10) return '10+';
+    return count.toString();
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kinder_pet/core/config/routes.dart';
 import 'package:kinder_pet/core/config/theme.dart';
+import 'package:kinder_pet/core/navigation/route_observer.dart';
 
 class KinderPet extends StatelessWidget {
   const KinderPet({super.key});
@@ -12,7 +13,8 @@ class KinderPet extends StatelessWidget {
       theme: appTheme,
       debugShowCheckedModeBanner: false,
       initialRoute: AppRoutes.splash,
-      routes: AppRoutes.appRoutes
+      routes: AppRoutes.appRoutes,
+      navigatorObservers: [routeObserver],
     );
   }
 }

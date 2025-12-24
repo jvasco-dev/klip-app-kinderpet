@@ -15,7 +15,7 @@ class DaycareEventRepository {
 
     final token = await _authRepository.getAccessToken();
 
-    if (token == null) throw Expando('Invalid session, please Sign In again');
+    if (token == null) throw Exception('Invalid session, please Sign In again');
 
     await _daycareEventService.createDaycareEvent(daycareId, token);
   }
@@ -27,7 +27,7 @@ class DaycareEventRepository {
 
     final token = await _authRepository.getAccessToken();
 
-    if (token == null) throw Expando('Invalid session, please Sign In again');
+    if (token == null) throw Exception('Invalid session, please Sign In again');
 
     return await _daycareEventService.getInProgressEvents(token);
   }
@@ -39,7 +39,7 @@ class DaycareEventRepository {
 
     final token = await _authRepository.getAccessToken();
 
-    if (token == null) throw Expando('Invalid session, please Sign In again');
+    if (token == null) throw Exception('Invalid session, please Sign In again');
 
     await _daycareEventService.endDaycareEvent(eventId, token);
   }

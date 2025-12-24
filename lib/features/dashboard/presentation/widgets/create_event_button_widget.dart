@@ -16,12 +16,24 @@ class CreateDaycareEventButton extends StatefulWidget {
 }
 
 class _CreateDaycareEventButtonState extends State<CreateDaycareEventButton> {
-  // bool _isPressed = false;
   bool _isCreatingEvent = false;
 
   Future<void> _startQRScanner(BuildContext context) async {
+    // Log para validar suposición: verificar permisos de cámara
+    print('DEBUG: Solicitando permiso de cámara');
+
     final status = await Permission.camera.request();
     if (!status.isGranted) {
+      // Log para validar suposición: verificar si el contexto sigue montado
+      print(
+        'DEBUG: Permiso de cámara denegado, verificando si el contexto está montado',
+      );
+
+      if (!context.mounted) {
+        print('DEBUG: Contexto no montado, evitando ScaffoldMessenger');
+        return;
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Camera permission is required')),
       );
@@ -36,14 +48,26 @@ class _CreateDaycareEventButtonState extends State<CreateDaycareEventButton> {
     if (scannedValue == null || !context.mounted) return;
 
     try {
-      // ✅ Se garantiza que el valor es un JSON tipo Map
       final decoded = jsonDecode(scannedValue);
       if (decoded is! Map<String, dynamic>) {
         throw const FormatException('QR content is not a valid JSON map');
       }
-      _showConfirmDialog(context, decoded);
+      if (context.mounted) {
+        _showConfirmDialog(context, decoded);
+      }
     } catch (e) {
       debugPrint('❌ Error decoding QR JSON: $e');
+
+      // Log para validar suposición: verificar si el contexto sigue montado después del error
+      print(
+        'DEBUG: Error al decodificar QR, verificando si el contexto está montado',
+      );
+
+      if (!context.mounted) {
+        print('DEBUG: Contexto no montado, evitando ScaffoldMessenger');
+        return;
+      }
+
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Invalid QR format')));
@@ -51,21 +75,15 @@ class _CreateDaycareEventButtonState extends State<CreateDaycareEventButton> {
   }
 
   void _showConfirmDialog(BuildContext context, Map<String, dynamic> data) {
-    final daycareBloc = context.read<DaycareEventBloc>();
-
     showDialog(
       context: context,
-      builder: (ctx) => BlocProvider.value(
-        value: daycareBloc,
-        child: _ConfirmDialog(
-          data: data,
-          onConfirm: () {
-            setState(() => _isCreatingEvent = true);
-          },
-        ),
+      builder: (_) => _ConfirmDialog(
+        data: data,
+        onConfirm: () {
+          setState(() => _isCreatingEvent = true);
+        },
       ),
     );
-    
   }
 
   @override
@@ -136,7 +154,7 @@ class _ConfirmDialog extends StatelessWidget {
         ElevatedButton(
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.dogOrange,
-            foregroundColor: Colors.white, // ✅ texto blanco visible
+            foregroundColor: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
@@ -144,6 +162,9 @@ class _ConfirmDialog extends StatelessWidget {
           onPressed: () {
             Navigator.pop(context);
             onConfirm();
+
+            /// 👉 Aquí ya ES SEGURO usar el Bloc,
+            /// porque el diálogo está bajo el provider correcto.
             context.read<DaycareEventBloc>().add(CreateDaycareEvent(petId));
           },
           child: const Text('Confirm'),

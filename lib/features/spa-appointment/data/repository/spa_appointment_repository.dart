@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:kinder_pet/features/auth/data/repositories/auth_repository.dart';
 import 'package:kinder_pet/features/spa-appointment/data/models/spa_appointment_model.dart';
 import 'package:kinder_pet/features/spa-appointment/data/service/spa_appointment_service.dart';
@@ -9,10 +10,29 @@ class SpaAppointmentRepository {
   SpaAppointmentRepository(this._service, this._authRepository);
 
   Future<List<SpaAppointment>> getAllAppointments({String? date}) async {
-    final token = await _authRepository.getAccessToken();
-    if (token == null) throw Exception('No authentication token found');
+    debugPrint('🔹 REPOSITORY: getAllAppointments llamado con date: $date');
 
-    return await _service.getAllAppointments(date: date, token: token);
+    try {
+      final token = await _authRepository.getAccessToken();
+      if (token == null) {
+        debugPrint('❌ REPOSITORY: No se encontró token de autenticación');
+        throw Exception('No authentication token found');
+      }
+
+      debugPrint('✅ REPOSITORY: Token obtenido: ${token.substring(0, 10)}...');
+      debugPrint('🔹 REPOSITORY: Llamando al servicio...');
+
+      final result = await _service.getAllAppointments(
+        date: date,
+        token: token,
+      );
+      debugPrint('✅ REPOSITORY: Servicio devolvió ${result.length} citas');
+
+      return result;
+    } catch (e) {
+      debugPrint('❌ REPOSITORY: Error en getAllAppointments: $e');
+      rethrow;
+    }
   }
 
   Future<SpaAppointment> createAppointment(SpaAppointment appointment) async {

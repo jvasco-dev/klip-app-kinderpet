@@ -19,9 +19,7 @@ class SignInScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => SignInBloc(
-        AuthRepository(AuthService()),
-      ),
+      create: (context) => SignInBloc(AuthRepository(AuthService())),
       child: BlocListener<SignInBloc, SignInState>(
         listenWhen: (previous, current) => previous.status != current.status,
         listener: (context, state) {
@@ -145,24 +143,33 @@ class SignInScreen extends StatelessWidget {
                             final bloc = context.read<SignInBloc>();
                             bloc.add(ValidateForm());
 
-                            Future.delayed(
-                              const Duration(milliseconds: 50),
-                              () {
-                                final state = bloc.state;
-                                if (state.isValid) {
-                                  bloc.add(SignInSubmitted());
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Please fill in all fields correctly',
-                                      ),
-                                      backgroundColor: AppColors.darkOrangeHover,
+                            Future.delayed(const Duration(milliseconds: 50), () {
+                              // Log para validar suposición: verificar si el contexto sigue montado
+                              print(
+                                'DEBUG: Verificando si el contexto está montado después del delay',
+                              );
+
+                              if (!context.mounted) {
+                                print(
+                                  'DEBUG: Contexto no montado, evitando uso de ScaffoldMessenger',
+                                );
+                                return;
+                              }
+
+                              final state = bloc.state;
+                              if (state.isValid) {
+                                bloc.add(SignInSubmitted());
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Please fill in all fields correctly',
                                     ),
-                                  );
-                                }
-                              },
-                            );
+                                    backgroundColor: AppColors.darkOrangeHover,
+                                  ),
+                                );
+                              }
+                            });
                           },
                         );
                       },

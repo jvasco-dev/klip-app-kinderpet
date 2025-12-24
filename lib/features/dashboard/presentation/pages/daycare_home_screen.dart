@@ -8,7 +8,7 @@ import 'package:kinder_pet/features/pets_daycare/presentation/pages/pets_daycare
 import 'package:kinder_pet/shared/widgets/common_keep_alive_wrapper.dart';
 
 class DaycareHomeScreen extends StatelessWidget {
-  DaycareHomeScreen({Key? key}) : super(key: key);
+  DaycareHomeScreen({super.key});
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final _pages = const [
@@ -23,7 +23,10 @@ class DaycareHomeScreen extends StatelessWidget {
 
     return PopScope(
       canPop: false,
-      onPopInvoked: (_) {
+      onPopInvokedWithResult: (_, __) {
+        // Log para validar suposición: verificar comportamiento del PopScope
+        print('DEBUG: PopScope invocado, tab actual: ${currentTab.name}');
+
         if (currentTab != DaycareTab.dashboard) {
           context.read<NavigationCubit>().selectTab(DaycareTab.dashboard);
         }

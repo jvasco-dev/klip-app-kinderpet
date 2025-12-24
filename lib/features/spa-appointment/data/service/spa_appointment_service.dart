@@ -1,13 +1,14 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/foundation.dart';
 import '../models/spa_appointment_model.dart';
 
 class SpaAppointmentService {
   Dio get _dio => Dio(
     BaseOptions(
       baseUrl: dotenv.env['API_URL']!,
-      connectTimeout: const Duration(seconds: 5),
-      receiveTimeout: const Duration(seconds: 5),
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 15),
     ),
   );
 
@@ -19,6 +20,9 @@ class SpaAppointmentService {
     String? date,
     required String token,
   }) async {
+    debugPrint(
+      '🔹 Obteniendo citas${date != null ? ' para la fecha: $date' : ' de todos los tiempos'}...',
+    );
     try {
       final response = await _dio.get(
         _baseUrl,
@@ -29,6 +33,10 @@ class SpaAppointmentService {
             'Content-Type': 'application/json',
           },
         ),
+      );
+
+      debugPrint(
+        '✅ Petición getAllAppointments exitosa. Status: ${response.statusCode}',
       );
 
       if (response.statusCode == 200 && response.data != null) {
@@ -42,6 +50,7 @@ class SpaAppointmentService {
             )
             .toList();
 
+        debugPrint('📊 Se obtuvieron ${appointments.length} citas');
         return appointments;
       } else {
         throw Exception(
@@ -49,9 +58,12 @@ class SpaAppointmentService {
         );
       }
     } on DioException catch (e) {
+      debugPrint('❌ Error en getAllAppointments: ${e.message}');
+      debugPrint('❌ Response: ${e.response?.data}');
       throw Exception(_handleDioError(e));
     } catch (e) {
       // Manejo de errores de serialización o de tipo que puede ser la causa original
+      debugPrint('❌ Error de deserialización: $e');
       throw Exception('Deserialization error: $e');
     }
   }
@@ -61,6 +73,7 @@ class SpaAppointmentService {
     required SpaAppointment appointment,
     required String token,
   }) async {
+    debugPrint('🔹 Creando cita para: ${appointment.pet}');
     try {
       final response = await _dio.post(
         _baseUrl,
@@ -73,6 +86,7 @@ class SpaAppointmentService {
         ),
       );
 
+      debugPrint('✅ Cita creada exitosamente. Status: ${response.statusCode}');
       if (response.statusCode == 201 && response.data != null) {
         return SpaAppointment.fromJson(response.data);
       } else {
@@ -81,6 +95,8 @@ class SpaAppointmentService {
         );
       }
     } on DioException catch (e) {
+      debugPrint('❌ Error en createAppointment: ${e.message}');
+      debugPrint('❌ Response: ${e.response?.data}');
       throw Exception(_handleDioError(e));
     }
   }
@@ -91,6 +107,7 @@ class SpaAppointmentService {
     required Map<String, dynamic> data,
     required String token,
   }) async {
+    debugPrint('🔹 Actualizando cita: $id con datos: $data');
     try {
       final response = await _dio.patch(
         '$_baseUrl/$id',
@@ -103,12 +120,17 @@ class SpaAppointmentService {
         ),
       );
 
+      debugPrint(
+        '✅ Cita actualizada exitosamente. Status: ${response.statusCode}',
+      );
       if (response.statusCode == 200 && response.data != null) {
         return SpaAppointment.fromJson(response.data);
       } else {
         throw Exception('Error updating appointment');
       }
     } on DioException catch (e) {
+      debugPrint('❌ Error en updateAppointment: ${e.message}');
+      debugPrint('❌ Response: ${e.response?.data}');
       throw Exception(_handleDioError(e));
     }
   }
@@ -119,8 +141,9 @@ class SpaAppointmentService {
     required String status,
     required String token,
   }) async {
+    debugPrint('🔹 Actualizando estado de cita: $id a: $status');
     try {
-      await _dio.patch(
+      final response = await _dio.patch(
         '$_baseUrl/$id/status',
         data: {'status': status},
         options: Options(
@@ -130,7 +153,12 @@ class SpaAppointmentService {
           },
         ),
       );
+      debugPrint(
+        '✅ Estado de cita actualizado exitosamente. Status: ${response.statusCode}',
+      );
     } on DioException catch (e) {
+      debugPrint('❌ Error en updateAppointmentStatus: ${e.message}');
+      debugPrint('❌ Response: ${e.response?.data}');
       throw Exception(_handleDioError(e));
     }
   }
